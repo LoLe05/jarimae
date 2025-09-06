@@ -1,0 +1,275 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Pretendard 폰트 Import */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+@layer base {
+  :root {
+    /* 자리매 브랜드 컬러 CSS 변수 */
+    --color-hazelnut: #b1967b;
+    --color-muted-blue: #557c9f;
+    --color-brown-900: #4A2C20;
+    --color-warm-gray: #f3f2f1;
+    --color-muted-gray: #64748b;
+  }
+
+  * {
+    @apply border-gray-200;
+  }
+  
+  body {
+    @apply bg-warm-gray text-brown-900;
+    font-family: 'Pretendard', system-ui, sans-serif;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* 스크롤바 스타일링 */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-warm-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-gray-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-gray-400;
+  }
+
+  /* 포커스 링 통일 */
+  :focus-visible {
+    @apply outline-none ring-2 ring-hazelnut ring-offset-2 ring-offset-warm-gray;
+  }
+}
+
+@layer components {
+  /* 자리매 전용 컴포넌트 스타일 */
+  
+  /* 로그인 카드 스타일 */
+  .login-card {
+    @apply bg-white rounded-3xl shadow-login-card border border-gray-100;
+  }
+
+  /* 애니메이션 배경 */
+  .animated-bg {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" fill="none"><defs><radialGradient id="a" cx="0%" cy="0%" r="100%"><stop offset="0%" style="stop-color:%23f3f2f1;stop-opacity:0.8" /><stop offset="100%" style="stop-color:%234A2C20;stop-opacity:0.1" /></radialGradient></defs><rect width="1200" height="800" fill="url(%23a)"/></svg>');
+    background-size: 200% 200%;
+    animation: flow 20s ease-in-out infinite;
+  }
+
+  /* 캘린더 그리드 */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.25rem;
+  }
+
+  .day-header,
+  .date-cell {
+    @apply text-center py-2 text-sm cursor-pointer transition-all duration-200;
+  }
+
+  .date-cell.event-day {
+    @apply border-2 border-hazelnut rounded-full font-bold;
+  }
+
+  .date-cell.selected {
+    @apply bg-hazelnut text-white font-bold rounded-full;
+  }
+
+  /* 버튼 기본 스타일 */
+  .btn-primary {
+    @apply bg-hazelnut text-white px-6 py-3 rounded-full font-medium 
+           hover:bg-hazelnut-600 focus:bg-hazelnut-700 
+           transition-colors duration-200 
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-muted-blue text-white px-6 py-3 rounded-full font-medium 
+           hover:bg-muted-blue-600 focus:bg-muted-blue-700 
+           transition-colors duration-200 
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply text-brown-900 px-6 py-3 rounded-full font-medium 
+           hover:bg-gray-100 focus:bg-gray-200 
+           transition-colors duration-200 
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply border-2 border-hazelnut text-hazelnut px-6 py-3 rounded-full font-medium 
+           hover:bg-hazelnut hover:text-white focus:bg-hazelnut focus:text-white 
+           transition-colors duration-200 
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* 입력 필드 기본 스타일 */
+  .input-primary {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-300 
+           placeholder-gray-500 text-brown-900 
+           focus:border-hazelnut focus:ring-2 focus:ring-hazelnut focus:ring-opacity-20 
+           transition-colors duration-200;
+  }
+
+  .input-error {
+    @apply border-red-500 focus:border-red-500 focus:ring-red-500;
+  }
+
+  /* 카드 스타일 */
+  .card-default {
+    @apply bg-white rounded-xl shadow-soft border border-gray-100;
+  }
+
+  .card-elevated {
+    @apply bg-white rounded-xl shadow-medium border border-gray-100;
+  }
+
+  /* 탭 스타일 */
+  .tab-active {
+    @apply bg-hazelnut text-white;
+  }
+
+  .tab-inactive {
+    @apply text-brown-900 hover:bg-gray-100;
+  }
+
+  /* 로딩 애니메이션 */
+  .loading-spinner {
+    @apply animate-spin h-5 w-5 text-hazelnut;
+  }
+
+  /* 토스트 알림 기본 스타일 */
+  .toast-success {
+    @apply bg-green-50 border border-green-200 text-green-800;
+  }
+
+  .toast-error {
+    @apply bg-red-50 border border-red-200 text-red-800;
+  }
+
+  .toast-warning {
+    @apply bg-yellow-50 border border-yellow-200 text-yellow-800;
+  }
+
+  .toast-info {
+    @apply bg-blue-50 border border-blue-200 text-blue-800;
+  }
+}
+
+@layer utilities {
+  /* 자리매 전용 유틸리티 클래스 */
+  
+  /* 텍스트 그라데이션 */
+  .text-gradient {
+    @apply bg-gradient-to-r from-hazelnut to-muted-blue bg-clip-text text-transparent;
+  }
+
+  /* 그림자 변형 */
+  .shadow-brand {
+    box-shadow: 0 4px 14px 0 rgba(177, 150, 123, 0.15);
+  }
+
+  .shadow-brand-lg {
+    box-shadow: 0 10px 40px -10px rgba(177, 150, 123, 0.25);
+  }
+
+  /* 배경 그라데이션 */
+  .bg-gradient-brand {
+    @apply bg-gradient-to-br from-hazelnut via-hazelnut-400 to-muted-blue;
+  }
+
+  .bg-gradient-warm {
+    @apply bg-gradient-to-br from-warm-gray-50 to-warm-gray-200;
+  }
+
+  /* 애니메이션 지연 */
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+  
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+  
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  /* 반응형 숨김/보임 */
+  .mobile-only {
+    @apply block md:hidden;
+  }
+
+  .desktop-only {
+    @apply hidden md:block;
+  }
+
+  /* 트렁케이트 확장 */
+  .truncate-2-lines {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .truncate-3-lines {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* 커스텀 애니메이션 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* 다크모드 대응 (향후 확장) */
+@media (prefers-color-scheme: dark) {
+  .dark-mode {
+    /* 다크모드 스타일은 향후 추가 */
+  }
+}
+
+/* 프린트 스타일 */
+@media print {
+  * {
+    @apply text-black bg-white;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
