@@ -23,6 +23,17 @@
     @apply bg-warm-gray text-brown-900;
     font-family: 'Pretendard', system-ui, sans-serif;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+    /* 모바일 최적화 */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+
+  /* 모바일에서 매끄러운 스크롤 */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* 스크롤바 스타일링 */
@@ -211,6 +222,24 @@
 
   .desktop-only {
     @apply hidden md:block;
+  }
+
+  /* 모바일 앱스러운 터치 인터랙션 */
+  .touch-action {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-tap {
+    @apply touch-action active:scale-95 transition-transform duration-150;
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /* 트렁케이트 확장 */

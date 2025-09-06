@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(npx tsc:*)",
+      "Bash(find:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd /c:*)",
+      "Bash(docker-compose:*)",
+      "Bash(ipconfig)",
+      "Bash(winget install:*)",
+      "Bash(choco install:*)",
+      "Bash(powershell:*)",
+      "Bash(./ngrok http 3000)",
+      "Bash(npx localtunnel:*)",
+      "Bash(npx vercel:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

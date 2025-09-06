@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Next.js 웹 애플리케이션
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development # 개발 환경용
+    ports:
+      - "3000:3000"
+    volumes:
+      # Hot reload를 위한 소스 코드 바인딩
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - jarimae-network
+    restart: unless-stopped
+
+  # PostgreSQL 데이터베이스 (향후 백엔드용)
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: jarimae
+      POSTGRES_USER: jarimae_user
+      POSTGRES_PASSWORD: jarimae_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - jarimae-network
+    restart: unless-stopped
+
+  # Redis (캐시 및 세션 스토어용)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - jarimae-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # Nginx (프록시 서버, 프로덕션용)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - web
+    networks:
+      - jarimae-network
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  jarimae-network:
+    driver: bridge

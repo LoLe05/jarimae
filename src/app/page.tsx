@@ -118,25 +118,25 @@ export default function MainPage() {
         <div className="absolute inset-0 animated-bg opacity-30" />
         
         <div className="relative z-10">
-          {/* 히어로 섹션 */}
-          <section className="container mx-auto px-4 py-16 text-center">
-            <div className="mb-8">
-              <h1 className="text-5xl md:text-7xl font-bold text-hazelnut mb-4">
+          {/* 히어로 섹션 - 모바일 우선 최적화 */}
+          <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16 text-center">
+            <div className="mb-6 sm:mb-8">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-hazelnut mb-3 sm:mb-4">
                 자리매
               </h1>
-              <p className="text-xl md:text-2xl text-brown-900 font-medium mb-2">
+              <p className="text-lg sm:text-xl md:text-2xl text-brown-900 font-medium mb-2">
                 소상공인을 위한 똑똑한 자리 예약
               </p>
-              <p className="text-lg text-gray-600">
+              <p className="text-base sm:text-lg text-gray-600">
                 손님과 사장님 모두 편안하게
               </p>
             </div>
 
-            {/* 검색 컨테이너 */}
+            {/* 검색 컨테이너 - 모바일 최적화 */}
             <div className="max-w-4xl mx-auto">
-              <Card className="p-8 mb-8">
-                {/* 탭 네비게이션 */}
-                <div className="flex justify-center gap-2 mb-6">
+              <Card className="p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
+                {/* 탭 네비게이션 - 모바일에서 더 컴팩트하게 */}
+                <div className="flex justify-center gap-1 sm:gap-2 mb-4 sm:mb-6">
                   {[
                     { id: 'reservation', label: '예약', icon: '🍽️' },
                     { id: 'delivery', label: '배달', icon: '🛵' },
@@ -146,40 +146,42 @@ export default function MainPage() {
                       key={tab.id}
                       onClick={() => handleTabChange(tab.id as 'reservation' | 'delivery' | 'waiting')}
                       className={`
-                        flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-200
+                        flex items-center gap-1 sm:gap-2 px-3 sm:px-4 md:px-6 py-2 sm:py-3 
+                        rounded-full font-medium transition-all duration-200 text-sm sm:text-base
+                        touch-manipulation min-h-[44px]
                         ${searchState.activeTab === tab.id
                           ? 'bg-hazelnut text-white shadow-md'
-                          : 'text-brown-900 hover:bg-hazelnut-50'
+                          : 'text-brown-900 hover:bg-hazelnut-50 active:bg-hazelnut-100'
                         }
                       `}
                     >
-                      <span>{tab.icon}</span>
-                      <span>{tab.label}</span>
+                      <span className="text-base sm:text-lg">{tab.icon}</span>
+                      <span className="hidden xs:inline sm:inline">{tab.label}</span>
                     </button>
                   ))}
                 </div>
 
-                {/* 검색바 */}
-                <div className="space-y-4">
-                  <div className="text-center mb-4">
-                    <div className="text-4xl mb-2">{tabContent.icon}</div>
-                    <p className="text-gray-600">{tabContent.description}</p>
+                {/* 검색바 - 모바일 최적화 */}
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="text-center mb-3 sm:mb-4">
+                    <div className="text-3xl sm:text-4xl mb-2">{tabContent.icon}</div>
+                    <p className="text-sm sm:text-base text-gray-600">{tabContent.description}</p>
                   </div>
 
-                  <div className="flex flex-col md:flex-row gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <div className="flex-1">
                       <Input
                         placeholder={tabContent.placeholder}
                         value={searchState.query}
                         onChange={(value) => setSearchState(prev => ({ ...prev, query: value }))}
                         onKeyDown={handleKeyPress}
-                        className="text-lg h-14"
+                        className="text-base sm:text-lg h-12 sm:h-14"
                       />
                     </div>
                     <Button
                       onClick={handleSearch}
                       size="lg"
-                      className="md:w-32 h-14 text-lg font-medium"
+                      className="w-full sm:w-auto sm:min-w-[120px] h-12 sm:h-14 text-base sm:text-lg font-medium"
                     >
                       검색
                     </Button>
@@ -203,30 +205,30 @@ export default function MainPage() {
             </div>
           </section>
 
-          {/* 대시보드 섹션 (로그인한 경우) */}
+          {/* 대시보드 섹션 (로그인한 경우) - 모바일 최적화 */}
           {isLoggedIn && (
-            <section className="container mx-auto px-4 py-8">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <section className="container mx-auto px-4 py-6 sm:py-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 
-                {/* 내 예약 목록 */}
+                {/* 내 예약 목록 - 모바일에서 더 컴팩트하게 */}
                 <div className="lg:col-span-2">
                   <Card>
-                    <div className="p-6">
-                      <h2 className="text-xl font-bold text-brown-900 mb-4 flex items-center gap-2">
+                    <div className="p-4 sm:p-6">
+                      <h2 className="text-lg sm:text-xl font-bold text-brown-900 mb-3 sm:mb-4 flex items-center gap-2">
                         📅 내 예약
                         <span className="text-sm font-normal text-gray-500">
                           ({myReservations.length}개)
                         </span>
                       </h2>
                       
-                      <div className="space-y-4">
+                      <div className="space-y-3 sm:space-y-4">
                         {myReservations.map((reservation) => (
-                          <div key={reservation.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-brown-900">
+                          <div key={reservation.id} className="border rounded-lg p-3 sm:p-4 hover:shadow-sm transition-shadow touch-manipulation">
+                            <div className="flex items-start justify-between mb-2">
+                              <h3 className="font-semibold text-brown-900 text-sm sm:text-base flex-1 pr-2">
                                 {reservation.restaurantName}
                               </h3>
-                              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              <span className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${
                                 reservation.status === 'confirmed' 
                                   ? 'bg-green-100 text-green-700'
                                   : reservation.status === 'pending'
@@ -237,14 +239,14 @@ export default function MainPage() {
                                  reservation.status === 'pending' ? '대기' : '취소'}
                               </span>
                             </div>
-                            <div className="text-sm text-gray-600">
+                            <div className="text-xs sm:text-sm text-gray-600">
                               📅 {reservation.date} {reservation.time} • 👥 {reservation.guests}명
                             </div>
                           </div>
                         ))}
                         
                         {myReservations.length === 0 && (
-                          <div className="text-center py-8 text-gray-500">
+                          <div className="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
                             아직 예약이 없습니다
                           </div>
                         )}

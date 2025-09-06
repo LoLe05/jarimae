@@ -108,27 +108,27 @@ export default function LoginPage() {
       {/* 배경 애니메이션 */}
       <div className="absolute inset-0 animated-bg opacity-30" />
       
-      <div className="relative z-10 container mx-auto px-4 py-8 min-h-screen flex flex-col items-center justify-center">
+      <div className="relative z-10 container mx-auto px-4 py-4 sm:py-8 min-h-screen flex flex-col items-center justify-center safe-area-top safe-area-bottom">
         
-        {/* 헤더 */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6 group">
-            <h1 className="text-4xl md:text-5xl font-bold text-hazelnut transition-transform group-hover:scale-105">
+        {/* 헤더 - 모바일 최적화 */}
+        <div className="text-center mb-6 sm:mb-8">
+          <Link href="/" className="inline-block mb-4 sm:mb-6 group mobile-tap">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-hazelnut transition-transform group-hover:scale-105">
               자리매
             </h1>
           </Link>
           
-          <h2 className="text-2xl md:text-3xl font-bold text-brown-900 mb-2">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-brown-900 mb-2">
             로그인
           </h2>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             자리매에서 편리한 예약을 시작하세요
           </p>
         </div>
 
-        {/* 로그인 폼 카드 */}
-        <Card className="w-full max-w-md p-8">
-          <div className="space-y-6">
+        {/* 로그인 폼 카드 - 모바일 최적화 */}
+        <Card className="w-full max-w-md p-4 sm:p-6 md:p-8">
+          <div className="space-y-4 sm:space-y-6">
             <Input
               id="email"
               type="email"
@@ -180,24 +180,24 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* 소셜 로그인 버튼들 */}
+            {/* 소셜 로그인 버튼들 - 모바일 터치 최적화 */}
             <div className="space-y-3">
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full flex items-center justify-center gap-3"
+                className="w-full flex items-center justify-center gap-3 mobile-tap min-h-[48px]"
                 onClick={() => console.log('카카오 로그인')}
               >
                 <div className="w-5 h-5 bg-yellow-400 rounded flex items-center justify-center">
                   <span className="text-xs font-bold text-brown-900">K</span>
                 </div>
-                카카오로 로그인
+                <span className="text-sm sm:text-base">카카오로 로그인</span>
               </Button>
 
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full flex items-center justify-center gap-3"
+                className="w-full flex items-center justify-center gap-3 mobile-tap min-h-[48px]"
                 onClick={() => console.log('구글 로그인')}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -218,37 +218,37 @@ export default function LoginPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                구글로 로그인
+                <span className="text-sm sm:text-base">구글로 로그인</span>
               </Button>
             </div>
           </div>
         </Card>
 
-        {/* 회원가입 링크 */}
-        <div className="text-center mt-8">
-          <p className="text-gray-600">
+        {/* 회원가입 링크 - 모바일 최적화 */}
+        <div className="text-center mt-6 sm:mt-8">
+          <p className="text-sm sm:text-base text-gray-600">
             아직 계정이 없으신가요?{' '}
             <Link 
               href="/auth/type"
-              className="text-hazelnut font-medium hover:text-hazelnut-600 transition-colors"
+              className="text-hazelnut font-medium hover:text-hazelnut-600 transition-colors mobile-tap"
             >
               회원가입하기
             </Link>
           </p>
         </div>
 
-        {/* 추가 링크들 */}
+        {/* 추가 링크들 - 모바일에서 더 터치하기 쉽게 */}
         <div className="text-center mt-4 space-y-2">
-          <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
-            <Link href="/terms" className="hover:text-hazelnut transition-colors">
+          <div className="flex flex-col sm:flex-row items-center justify-center sm:space-x-4 space-y-2 sm:space-y-0 text-xs sm:text-sm text-gray-500">
+            <Link href="/terms" className="hover:text-hazelnut transition-colors mobile-tap py-1 px-2">
               이용약관
             </Link>
-            <span>•</span>
-            <Link href="/privacy" className="hover:text-hazelnut transition-colors">
+            <span className="hidden sm:inline">•</span>
+            <Link href="/privacy" className="hover:text-hazelnut transition-colors mobile-tap py-1 px-2">
               개인정보처리방침
             </Link>
-            <span>•</span>
-            <Link href="/support" className="hover:text-hazelnut transition-colors">
+            <span className="hidden sm:inline">•</span>
+            <Link href="/support" className="hover:text-hazelnut transition-colors mobile-tap py-1 px-2">
               고객센터
             </Link>
           </div>
