@@ -27,7 +27,8 @@
       "Bash(npx prisma generate:*)",
       "Bash(npx prisma:*)",
       "Bash(pg_ctl:*)",
-      "Bash(rd:*)"
+      "Bash(rd:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

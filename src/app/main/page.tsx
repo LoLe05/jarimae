@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Card, Button, Input } from '@/components/ui'
+import { Calendar } from '@/components/ui/Calendar'
 import { Header, Footer } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
 import { apiClient, API_ENDPOINTS } from '@/lib/api-client'
@@ -19,9 +20,23 @@ interface SearchState {
 interface ReservationItem {
   id: string
   restaurantName: string
+  restaurantId: string
   date: string
   time: string
-  status: 'confirmed' | 'pending' | 'cancelled'
+  status: 'confirmed' | 'pending' | 'cancelled' | 'completed'
+  guests: number
+  specialRequest?: string
+  phone?: string
+  address?: string
+  createdAt: string
+}
+
+interface CalendarEvent {
+  id: string
+  title: string
+  date: string
+  time: string
+  status: 'confirmed' | 'pending' | 'cancelled' | 'completed'
   guests: number
 }
 
@@ -81,8 +96,9 @@ export default function MainDashboardPage() {
 
     setIsLoadingReservations(true)
     try {
-      // Mock 예약 데이터
+      // Mock 예약 데이터 - 지난 예약과 미래 예약 포함
       const mockReservations: ReservationItem[] = [
+        // 미래 예약
         {
           id: '1',
           restaurantName: '맛있는 한식당',
@@ -107,6 +123,70 @@ export default function MainDashboardPage() {
           phone: '02-2345-6789',
           address: '서울특별시 강남구 강남대로 456',
           createdAt: '2025-09-05'
+        },
+        {
+          id: '3',
+          restaurantName: '스시 오마카세',
+          restaurantId: '3',
+          date: '2025-09-25',
+          time: '20:00',
+          status: 'confirmed',
+          guests: 2,
+          specialRequest: '알레르기: 새우',
+          phone: '02-3456-7890',
+          address: '서울특별시 강남구 역삼동 789',
+          createdAt: '2025-09-07'
+        },
+        {
+          id: '4',
+          restaurantName: '프렌치 비스트로',
+          restaurantId: '4',
+          date: '2025-09-12',
+          time: '19:30',
+          status: 'pending',
+          guests: 3,
+          phone: '02-4567-8901',
+          address: '서울특별시 서초구 반포동 101',
+          createdAt: '2025-09-08'
+        },
+        // 지난 예약 (완료/취소)
+        {
+          id: '5',
+          restaurantName: '중국집 금강산',
+          restaurantId: '5',
+          date: '2025-09-05',
+          time: '18:00',
+          status: 'completed',
+          guests: 6,
+          specialRequest: '단체석 요청',
+          phone: '02-5678-9012',
+          address: '서울특별시 마포구 홍대입구역',
+          createdAt: '2025-09-01'
+        },
+        {
+          id: '6',
+          restaurantName: '카페 라떼',
+          restaurantId: '6',
+          date: '2025-09-03',
+          time: '15:30',
+          status: 'completed',
+          guests: 2,
+          phone: '02-6789-0123',
+          address: '서울특별시 종로구 인사동',
+          createdAt: '2025-08-28'
+        },
+        {
+          id: '7',
+          restaurantName: '바베큐 하우스',
+          restaurantId: '7',
+          date: '2025-09-01',
+          time: '19:00',
+          status: 'cancelled',
+          guests: 4,
+          specialRequest: '금연석 요청',
+          phone: '02-7890-1234',
+          address: '서울특별시 영등포구 여의도동',
+          createdAt: '2025-08-25'
         }
       ]
       
@@ -142,6 +222,34 @@ export default function MainDashboardPage() {
       console.error('Failed to fetch stats:', error)
       setIsLoadingStats(false)
     }
+  }
+
+  // 예약 데이터를 캘린더 이벤트로 변환
+  const convertToCalendarEvents = (reservations: ReservationItem[]): CalendarEvent[] => {
+    return reservations.map(reservation => ({
+      id: reservation.id,
+      title: reservation.restaurantName,
+      date: reservation.date,
+      time: reservation.time,
+      status: reservation.status,
+      guests: reservation.guests
+    }))
+  }
+
+  // 캘린더 이벤트 핸들러
+  const handleDateClick = (date: Date) => {
+    console.log('날짜 클릭:', date.toDateString())
+    // TODO: 해당 날짜의 예약 상세 표시 또는 새 예약 생성
+  }
+
+  const handleEventClick = (event: CalendarEvent) => {
+    console.log('이벤트 클릭:', event)
+    // TODO: 예약 상세 정보 모달 표시
+    showToast({
+      type: 'info',
+      title: '예약 정보',
+      message: `${event.title} - ${event.time} (${event.guests}명)`
+    })
   }
 
   // 데이터 로딩
@@ -338,6 +446,15 @@ export default function MainDashboardPage() {
           {/* 대시보드 섹션 (로그인한 경우) - 모바일 최적화 */}
           {isLoggedIn && (
             <section className="container mx-auto px-4 py-6 sm:py-8">
+              {/* 캘린더 섹션 - 전체 너비 */}
+              <div className="mb-6 sm:mb-8">
+                <Calendar 
+                  events={convertToCalendarEvents(myReservations)}
+                  onDateClick={handleDateClick}
+                  onEventClick={handleEventClick}
+                />
+              </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 
                 {/* 내 예약 목록 - 모바일에서 더 컴팩트하게 */}
@@ -358,28 +475,52 @@ export default function MainDashboardPage() {
                             <p className="text-sm text-gray-500">예약 목록을 불러오는 중...</p>
                           </div>
                         ) : myReservations.length > 0 ? (
-                          myReservations.map((reservation) => (
-                            <div key={reservation.id} className="border rounded-lg p-3 sm:p-4 hover:shadow-sm transition-shadow touch-manipulation">
-                              <div className="flex items-start justify-between mb-2">
-                                <h3 className="font-semibold text-brown-900 text-sm sm:text-base flex-1 pr-2">
-                                  {reservation.restaurantName}
-                                </h3>
-                                <span className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${
-                                  reservation.status === 'confirmed' 
-                                    ? 'bg-green-100 text-green-700'
-                                    : reservation.status === 'pending'
-                                    ? 'bg-yellow-100 text-yellow-700'
-                                    : 'bg-red-100 text-red-700'
-                                }`}>
-                                  {reservation.status === 'confirmed' ? '확정' : 
-                                   reservation.status === 'pending' ? '대기' : '취소'}
-                                </span>
-                              </div>
-                              <div className="text-xs sm:text-sm text-gray-600">
-                                📅 {reservation.date} {reservation.time} • 👥 {reservation.guests}명
-                              </div>
-                            </div>
-                          ))
+                          // 상태별로 정렬: pending -> confirmed -> completed -> cancelled
+                          myReservations
+                            .sort((a, b) => {
+                              const statusOrder = { 'pending': 0, 'confirmed': 1, 'completed': 2, 'cancelled': 3 }
+                              return statusOrder[a.status] - statusOrder[b.status]
+                            })
+                            .map((reservation) => {
+                              const isPast = new Date(reservation.date) < new Date()
+                              return (
+                                <div key={reservation.id} className={`
+                                  border rounded-lg p-3 sm:p-4 hover:shadow-sm transition-shadow touch-manipulation
+                                  ${isPast ? 'opacity-75' : ''}
+                                `}>
+                                  <div className="flex items-start justify-between mb-2">
+                                    <h3 className={`font-semibold text-sm sm:text-base flex-1 pr-2 ${
+                                      isPast ? 'text-gray-600' : 'text-brown-900'
+                                    }`}>
+                                      {reservation.restaurantName}
+                                    </h3>
+                                    <span className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${
+                                      reservation.status === 'confirmed' 
+                                        ? 'bg-green-100 text-green-700'
+                                        : reservation.status === 'pending'
+                                        ? 'bg-yellow-100 text-yellow-700'
+                                        : reservation.status === 'completed'
+                                        ? 'bg-blue-100 text-blue-700'
+                                        : 'bg-red-100 text-red-700'
+                                    }`}>
+                                      {reservation.status === 'confirmed' ? '확정' : 
+                                       reservation.status === 'pending' ? '대기' : 
+                                       reservation.status === 'completed' ? '완료' : '취소'}
+                                    </span>
+                                  </div>
+                                  <div className={`text-xs sm:text-sm ${
+                                    isPast ? 'text-gray-500' : 'text-gray-600'
+                                  }`}>
+                                    📅 {reservation.date} {reservation.time} • 👥 {reservation.guests}명
+                                    {reservation.specialRequest && (
+                                      <div className="mt-1 text-xs text-gray-500">
+                                        💬 {reservation.specialRequest}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            })
                         ) : (
                           <div className="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
                             <div className="mb-3 text-3xl">📅</div>

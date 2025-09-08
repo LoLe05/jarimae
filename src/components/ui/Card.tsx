@@ -97,8 +97,6 @@ const Card = forwardRef<HTMLDivElement, CardProps>(({
 
 Card.displayName = 'Card'
 
-export default Card
-
 // 카드 하위 컴포넌트들
 export const CardHeader = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, children, ...props }, ref) => (
@@ -164,3 +162,6 @@ export const CardFooter = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
   )
 )
 CardFooter.displayName = 'CardFooter'
+
+// Default export
+export default Card

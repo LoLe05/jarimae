@@ -35,5 +35,7 @@ export {
   ListSkeleton
 } from './Loading'
 
+export { Calendar } from './Calendar'
+
 // 사용 예시:
-// import { Button, Input, Card, Loading } from '@/components/ui'
+// import { Button, Input, Card, Loading, Calendar } from '@/components/ui'

@@ -20,7 +20,6 @@ export default function LandingPage() {
     rememberMe: false
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
 
   // 인증 상태 확인 후 로그인된 상태라면 메인 대시보드로 리디렉션
@@ -90,27 +89,72 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="antialiased text-brown-900 flex items-center justify-center min-h-screen relative overflow-hidden">
+    <div className="antialiased text-brown-900 min-h-screen relative overflow-hidden" style={{ backgroundColor: '#f3f2f1' }}>
       {/* Background Animation Layer */}
       <div className="absolute inset-0 z-0 animated-bg opacity-30" />
+      
+      {/* Decorative Elements */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {/* 큰 곡선 면 */}
+        <div className="floating-curve absolute -top-20 -left-40 w-80 h-80 bg-hazelnut opacity-8 curve-shape-1"></div>
+        <div className="floating-curve absolute top-1/4 -right-32 w-96 h-64 bg-muted-blue opacity-6 curve-shape-2"></div>
+        <div className="floating-curve absolute -bottom-32 left-1/4 w-72 h-96 bg-hazelnut opacity-10 curve-shape-3"></div>
+        
+        {/* 중간 크기 곡선 */}
+        <div className="floating-curve absolute top-1/3 left-1/5 w-48 h-32 bg-brown-900 opacity-4 curve-shape-4"></div>
+        <div className="floating-curve absolute bottom-1/4 right-1/4 w-64 h-40 bg-muted-blue opacity-8 curve-shape-5"></div>
+        
+        {/* 작은 장식 곡선 */}
+        <div className="floating-curve absolute top-1/2 right-1/3 w-32 h-24 bg-hazelnut opacity-12 curve-shape-6"></div>
+      </div>
 
       {/* Main Content Container (Responsive) */}
-      <div className="main-container relative z-10 container mx-auto px-4 py-8 flex">
+      <div className="main-container relative z-10 container mx-auto px-4 py-8 flex items-center justify-center min-h-screen">
         
-        {/* Catchphrase and Logo */}
-        <div className="text-section flex-1">
-          <h1 className="text-6xl font-bold text-hazelnut md:text-8xl">자리매</h1>
-          <p className="mt-4 text-xl md:text-2xl font-bold text-brown-900 leading-snug">
-            소상공인을 위한<br className="md:hidden" />똑똑한 자리 예약
-          </p>
-          <p className="mt-2 text-lg md:text-xl text-brown-900 opacity-80">
-            손님과 사장님 모두 편안하게
-          </p>
+        {/* Left Section - Brand & Value Proposition */}
+        <div className="text-section flex-1 max-w-2xl">
+          {/* Main Logo & Tagline */}
+          <div className="mb-8">
+            <h1 className="text-7xl md:text-9xl font-bold text-hazelnut mb-6 tracking-tight">자리매</h1>
+            <h2 className="text-2xl md:text-3xl font-bold text-brown-900 leading-relaxed mb-4">
+              소상공인을 위한 <span className="text-hazelnut">스마트</span> 예약 솔루션
+            </h2>
+            <p className="text-lg md:text-xl text-brown-900 opacity-80 leading-relaxed">
+              손님과 사장님 모두를 위한<br className="md:hidden" /> 
+              편안하고 직관적인 예약 경험
+            </p>
+          </div>
+
+          {/* Value Propositions */}
+          <div className="space-y-4 mb-8 text-left">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-hazelnut"></div>
+              <span className="text-brown-900">실시간 예약 관리와 웨이팅 시스템</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-muted-blue"></div>
+              <span className="text-brown-900">소상공인 친화적인 간편한 매장 관리</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-hazelnut"></div>
+              <span className="text-brown-900">한국적 정서를 담은 따뜻한 서비스</span>
+            </div>
+          </div>
+
+          {/* CTA for visitors */}
+          <div className="hidden md:block">
+            <Link href="/auth/type" className="inline-flex items-center gap-2 text-muted-blue hover:text-hazelnut font-medium transition-colors">
+              지금 시작하기 →
+            </Link>
+          </div>
         </div>
         
         {/* Login Card */}
-        <div className="flex-1 bg-white p-8 rounded-3xl login-card border border-gray-100 max-w-sm w-full">
-          <h2 className="text-2xl font-bold text-center mb-6">로그인</h2>
+        <div className="flex-1 bg-white p-8 rounded-3xl login-card border border-gray-100 max-w-md w-full shadow-lg">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-brown-900 mb-2">로그인</h2>
+            <p className="text-sm text-gray-600">자리매에 오신 것을 환영합니다</p>
+          </div>
 
           {/* Error Message */}
           {error && (
@@ -136,25 +180,15 @@ export default function LandingPage() {
             
             <div className="mb-4">
               <label htmlFor="password" className="block text-sm font-medium mb-1">비밀번호</label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="비밀번호 입력"
-                  value={formData.password}
-                  onChange={(value) => handleInputChange('password', value)}
-                  disabled={isLoading}
-                  className="w-full pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                  disabled={isLoading}
-                >
-                  {showPassword ? '🙈' : '👁️'}
-                </button>
-              </div>
+              <Input
+                id="password"
+                type="password"
+                placeholder="비밀번호 입력"
+                value={formData.password}
+                onChange={(value) => handleInputChange('password', value)}
+                disabled={isLoading}
+                className="w-full"
+              />
             </div>
 
             {/* Remember Me Checkbox */}
@@ -194,23 +228,23 @@ export default function LandingPage() {
           <div className="space-y-3">
             <button 
               onClick={() => handleSocialLogin('kakao')}
-              className="w-full bg-muted-blue text-white font-bold py-3 rounded-full flex items-center justify-center space-x-2 hover:bg-opacity-80 transition-opacity"
+              className="w-full bg-yellow-400 text-brown-900 font-semibold py-3.5 rounded-2xl flex items-center justify-center space-x-3 hover:bg-yellow-300 transition-all duration-200 shadow-sm"
               disabled={isLoading}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M7.9 20A9.3 9.3 0 0 1 4 16.1L2 22l5.9-2.1c2-.4 4.1-.6 6.1-.5 5.5.3 10.3-4.1 10.3-9.5S19.5 2.5 14 2.5 3.7 7 4.2 12.5" />
-              </svg>
+              <div className="w-5 h-5 bg-brown-900 rounded-full flex items-center justify-center">
+                <span className="text-yellow-400 text-xs font-bold">K</span>
+              </div>
               <span>카카오로 시작하기</span>
             </button>
             
             <button 
               onClick={() => handleSocialLogin('naver')}
-              className="w-full bg-gray-500 text-white font-bold py-3 rounded-full flex items-center justify-center space-x-2 hover:bg-opacity-80 transition-opacity"
+              className="w-full bg-green-500 text-white font-semibold py-3.5 rounded-2xl flex items-center justify-center space-x-3 hover:bg-green-400 transition-all duration-200 shadow-sm"
               disabled={isLoading}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
-              </svg>
+              <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
+                <span className="text-green-500 text-xs font-bold">N</span>
+              </div>
               <span>네이버로 시작하기</span>
             </button>
           </div>
@@ -228,22 +262,103 @@ export default function LandingPage() {
       </div>
       
       {/* Footer */}
-      <footer className="absolute bottom-4 left-0 right-0 text-center text-sm text-brown-900 opacity-60">
-        <p>Copyright © 2025 자리매. All Rights Reserved.</p>
+      <footer className="absolute bottom-0 left-0 right-0 py-6 text-center">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-6 text-sm text-brown-900 opacity-60">
+              <span>© 2025 자리매</span>
+              <span className="hidden md:inline">|</span>
+              <span>소상공인과 함께하는 스마트 예약</span>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-brown-900 opacity-50">
+              <span>서비스 이용약관</span>
+              <span>•</span>
+              <span>개인정보처리방침</span>
+            </div>
+          </div>
+        </div>
       </footer>
 
       <style jsx>{`
+        .animated-bg {
+          background: linear-gradient(-45deg, #f3f2f1, #e8e6e3, #f0efec, #f5f4f2);
+          background-size: 400% 400%;
+          animation: gradientShift 15s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        .floating-curve {
+          animation: curveFlow 25s ease-in-out infinite;
+        }
+        
+        .floating-curve:nth-child(1) { animation-delay: 0s; }
+        .floating-curve:nth-child(2) { animation-delay: 4s; }
+        .floating-curve:nth-child(3) { animation-delay: 8s; }
+        .floating-curve:nth-child(4) { animation-delay: 12s; }
+        .floating-curve:nth-child(5) { animation-delay: 16s; }
+        .floating-curve:nth-child(6) { animation-delay: 20s; }
+
+        @keyframes curveFlow {
+          0%, 100% { 
+            transform: translateX(0px) translateY(0px) rotate(0deg) scaleX(1) scaleY(1); 
+            opacity: 0.8;
+          }
+          25% { 
+            transform: translateX(-15px) translateY(-25px) rotate(5deg) scaleX(1.1) scaleY(0.9); 
+            opacity: 0.6;
+          }
+          50% { 
+            transform: translateX(20px) translateY(-10px) rotate(-3deg) scaleX(0.9) scaleY(1.2); 
+            opacity: 1;
+          }
+          75% { 
+            transform: translateX(-8px) translateY(-35px) rotate(8deg) scaleX(1.15) scaleY(0.85); 
+            opacity: 0.7;
+          }
+        }
+
+        /* 각 곡선 면의 모양 정의 */
+        .curve-shape-1 {
+          border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+        }
+        .curve-shape-2 {
+          border-radius: 30% 70% 60% 40% / 50% 30% 70% 50%;
+        }
+        .curve-shape-3 {
+          border-radius: 50% 50% 80% 20% / 60% 40% 60% 40%;
+        }
+        .curve-shape-4 {
+          border-radius: 60% 40% 30% 70% / 30% 60% 40% 70%;
+        }
+        .curve-shape-5 {
+          border-radius: 70% 30% 50% 50% / 40% 70% 30% 60%;
+        }
+        .curve-shape-6 {
+          border-radius: 80% 20% 60% 40% / 50% 50% 80% 20%;
+        }
+
         .main-container {
           flex-direction: column;
           align-items: center;
           justify-content: center;
           text-align: center;
         }
+        
         .text-section {
           margin-bottom: 2.5rem;
         }
+        
         .login-card {
-          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+          backdrop-filter: blur(20px);
+          background: rgba(255, 255, 255, 0.95);
+          box-shadow: 
+            0 25px 50px -12px rgba(74, 44, 32, 0.15),
+            0 0 0 1px rgba(177, 150, 123, 0.1);
         }
 
         @media (min-width: 768px) {
@@ -251,7 +366,7 @@ export default function LandingPage() {
             flex-direction: row;
             align-items: center;
             justify-content: center;
-            gap: 4rem;
+            gap: 5rem;
           }
           .text-section {
             margin-bottom: 0;
