@@ -209,9 +209,15 @@ export default function SignupPage() {
         message: `환영합니다, ${formData.name}님!`
       })
 
-      // 회원가입 성공 후 로그인 페이지로 이동
+      // 회원가입 성공 후 구독 프로모션 페이지로 이동
       setTimeout(() => {
-        router.push('/auth/login?email=' + encodeURIComponent(formData.email))
+        if (isCustomer) {
+          // 일반 사용자는 매김이 프로모션 페이지로
+          router.push('/subscription/user?welcome=true')
+        } else {
+          // 매장 사용자는 어울림터 프로모션 페이지로  
+          router.push('/subscription/partner?welcome=true')
+        }
       }, 1500) // 토스트 메시지를 볼 수 있도록 1.5초 대기
     } catch (error: any) {
       console.error('Signup error:', error)

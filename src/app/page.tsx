@@ -89,24 +89,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="antialiased text-brown-900 min-h-screen relative overflow-hidden" style={{ backgroundColor: '#f3f2f1' }}>
-      {/* Background Animation Layer */}
-      <div className="absolute inset-0 z-0 animated-bg opacity-30" />
-      
-      {/* Decorative Elements */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        {/* 큰 곡선 면 */}
-        <div className="floating-curve absolute -top-20 -left-40 w-80 h-80 bg-hazelnut opacity-8 curve-shape-1"></div>
-        <div className="floating-curve absolute top-1/4 -right-32 w-96 h-64 bg-muted-blue opacity-6 curve-shape-2"></div>
-        <div className="floating-curve absolute -bottom-32 left-1/4 w-72 h-96 bg-hazelnut opacity-10 curve-shape-3"></div>
-        
-        {/* 중간 크기 곡선 */}
-        <div className="floating-curve absolute top-1/3 left-1/5 w-48 h-32 bg-brown-900 opacity-4 curve-shape-4"></div>
-        <div className="floating-curve absolute bottom-1/4 right-1/4 w-64 h-40 bg-muted-blue opacity-8 curve-shape-5"></div>
-        
-        {/* 작은 장식 곡선 */}
-        <div className="floating-curve absolute top-1/2 right-1/3 w-32 h-24 bg-hazelnut opacity-12 curve-shape-6"></div>
-      </div>
+    <div className="antialiased text-brown-900 min-h-screen" style={{ backgroundColor: '#f3f2f1' }}>
 
       {/* Main Content Container (Responsive) */}
       <div className="main-container relative z-10 container mx-auto px-4 py-8 flex items-center justify-center min-h-screen">
@@ -280,68 +263,6 @@ export default function LandingPage() {
       </footer>
 
       <style jsx>{`
-        .animated-bg {
-          background: linear-gradient(-45deg, #f3f2f1, #e8e6e3, #f0efec, #f5f4f2);
-          background-size: 400% 400%;
-          animation: gradientShift 15s ease infinite;
-        }
-        
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-
-        .floating-curve {
-          animation: curveFlow 25s ease-in-out infinite;
-        }
-        
-        .floating-curve:nth-child(1) { animation-delay: 0s; }
-        .floating-curve:nth-child(2) { animation-delay: 4s; }
-        .floating-curve:nth-child(3) { animation-delay: 8s; }
-        .floating-curve:nth-child(4) { animation-delay: 12s; }
-        .floating-curve:nth-child(5) { animation-delay: 16s; }
-        .floating-curve:nth-child(6) { animation-delay: 20s; }
-
-        @keyframes curveFlow {
-          0%, 100% { 
-            transform: translateX(0px) translateY(0px) rotate(0deg) scaleX(1) scaleY(1); 
-            opacity: 0.8;
-          }
-          25% { 
-            transform: translateX(-15px) translateY(-25px) rotate(5deg) scaleX(1.1) scaleY(0.9); 
-            opacity: 0.6;
-          }
-          50% { 
-            transform: translateX(20px) translateY(-10px) rotate(-3deg) scaleX(0.9) scaleY(1.2); 
-            opacity: 1;
-          }
-          75% { 
-            transform: translateX(-8px) translateY(-35px) rotate(8deg) scaleX(1.15) scaleY(0.85); 
-            opacity: 0.7;
-          }
-        }
-
-        /* 각 곡선 면의 모양 정의 */
-        .curve-shape-1 {
-          border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-        }
-        .curve-shape-2 {
-          border-radius: 30% 70% 60% 40% / 50% 30% 70% 50%;
-        }
-        .curve-shape-3 {
-          border-radius: 50% 50% 80% 20% / 60% 40% 60% 40%;
-        }
-        .curve-shape-4 {
-          border-radius: 60% 40% 30% 70% / 30% 60% 40% 70%;
-        }
-        .curve-shape-5 {
-          border-radius: 70% 30% 50% 50% / 40% 70% 30% 60%;
-        }
-        .curve-shape-6 {
-          border-radius: 80% 20% 60% 40% / 50% 50% 80% 20%;
-        }
-
         .main-container {
           flex-direction: column;
           align-items: center;
@@ -354,11 +275,10 @@ export default function LandingPage() {
         }
         
         .login-card {
-          backdrop-filter: blur(20px);
-          background: rgba(255, 255, 255, 0.95);
+          background: rgba(255, 255, 255, 1);
           box-shadow: 
-            0 25px 50px -12px rgba(74, 44, 32, 0.15),
-            0 0 0 1px rgba(177, 150, 123, 0.1);
+            0 10px 25px -5px rgba(74, 44, 32, 0.1),
+            0 4px 6px -2px rgba(74, 44, 32, 0.05);
         }
 
         @media (min-width: 768px) {
