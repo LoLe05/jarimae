@@ -2,320 +2,263 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Card, Button, Input } from '@/components/ui'
-import { Header, Footer } from '@/components/layout'
+import { useRouter } from 'next/navigation'
+import { Button, Input } from '@/components/ui'
 import { useAuth } from '@/contexts/AuthContext'
 
-interface SearchState {
-  activeTab: 'reservation' | 'delivery' | 'waiting'
-  query: string
-  location: string
-}
-
-interface ReservationItem {
-  id: string
-  restaurantName: string
-  date: string
-  time: string
-  status: 'confirmed' | 'pending' | 'cancelled'
-  guests: number
-}
-
 /**
- * 자리매 메인 페이지 (통합 대시보드)
- * HTML 시안: jarimae_unified_main_final.html
+ * 자리매 시작 페이지 (로그인 전 랜딩)
+ * HTML 시안: jarimae_unique_login_main_responsive.html
  * 경로: /
  */
-export default function MainPage() {
-  const { isLoggedIn, user } = useAuth()
-  const [searchState, setSearchState] = useState<SearchState>({
-    activeTab: 'reservation',
-    query: '',
-    location: '서울특별시 강남구'
+export default function LandingPage() {
+  const { isLoggedIn, login, isLoading: authLoading } = useAuth()
+  const router = useRouter()
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: false
   })
+  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
 
-  // 임시 예약 데이터
-  const [myReservations] = useState<ReservationItem[]>([
-    {
-      id: '1',
-      restaurantName: '맛있는 한식당',
-      date: '2025-09-10',
-      time: '19:00',
-      status: 'confirmed',
-      guests: 4
-    },
-    {
-      id: '2', 
-      restaurantName: '이탈리안 레스토랑',
-      date: '2025-09-12',
-      time: '18:30',
-      status: 'pending',
-      guests: 2
+  // 인증 상태 확인 후 로그인된 상태라면 메인 대시보드로 리디렉션
+  useEffect(() => {
+    console.log('🏠 Root 페이지 - 인증 상태 체크:', { isLoggedIn, authLoading })
+    
+    // AuthContext 로딩이 완료되고 로그인된 상태라면 리디렉션
+    if (!authLoading && isLoggedIn) {
+      console.log('🔄 메인 페이지로 리디렉션')
+      router.push('/main')
     }
-  ])
+  }, [isLoggedIn, authLoading, router])
 
-  const handleTabChange = (tab: 'reservation' | 'delivery' | 'waiting') => {
-    setSearchState(prev => ({ ...prev, activeTab: tab }))
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    if (error) setError('') // 에러 메시지 초기화
   }
 
-  const handleSearch = () => {
-    if (!searchState.query.trim()) {
-      alert('검색어를 입력해주세요')
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    
+    if (!formData.email.trim()) {
+      setError('이메일을 입력해주세요')
       return
     }
     
-    // 검색 결과 페이지로 이동
-    const searchParams = new URLSearchParams({
-      q: searchState.query,
-      type: searchState.activeTab
-    })
+    if (!formData.password.trim()) {
+      setError('비밀번호를 입력해주세요')
+      return
+    }
+
+    setIsLoading(true)
     
-    window.location.href = `/search?${searchParams.toString()}`
-  }
+    try {
+      // 기억하기 체크박스 처리
+      if (formData.rememberMe) {
+        localStorage.setItem('jarimae_remembered_email', formData.email)
+      } else {
+        localStorage.removeItem('jarimae_remembered_email')
+      }
 
-  const handleLocationChange = () => {
-    console.log('Change location')
-    // TODO: 위치 변경 모달 또는 페이지
-  }
-
-  const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      handleSearch()
+      // AuthContext의 login 메서드 사용 (API 연동 포함)
+      await login(formData.email, formData.password, formData.rememberMe)
+      
+      // 성공 시 메인 대시보드로 이동 (AuthContext에서 자동으로 처리됨)
+      router.push('/main')
+    } catch (error) {
+      console.error('Login error:', error)
+      setError('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const getTabContent = () => {
-    switch (searchState.activeTab) {
-      case 'reservation':
-        return {
-          placeholder: '어떤 맛집을 찾고 계세요?',
-          icon: '🍽️',
-          description: '예약 가능한 맛집을 찾아보세요'
-        }
-      case 'delivery':
-        return {
-          placeholder: '배달 음식을 검색하세요',
-          icon: '🛵',
-          description: '빠른 배달 서비스를 이용하세요'
-        }
-      case 'waiting':
-        return {
-          placeholder: '웨이팅 가능한 식당을 찾아보세요',
-          icon: '⏰',
-          description: '실시간 웨이팅 현황을 확인하세요'
-        }
+  // 기억된 이메일 불러오기
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('jarimae_remembered_email')
+    if (rememberedEmail) {
+      setFormData(prev => ({ ...prev, email: rememberedEmail, rememberMe: true }))
     }
-  }
+  }, [])
 
-  const tabContent = getTabContent()
+  const handleSocialLogin = (provider: string) => {
+    console.log(`Social login with ${provider}`)
+    // TODO: 소셜 로그인 구현
+  }
 
   return (
-    <div className="min-h-screen bg-warm-gray">
-      <Header />
-      
-      <main className="relative overflow-hidden">
-        {/* 배경 애니메이션 */}
-        <div className="absolute inset-0 animated-bg opacity-30" />
+    <div className="antialiased text-brown-900 flex items-center justify-center min-h-screen relative overflow-hidden">
+      {/* Background Animation Layer */}
+      <div className="absolute inset-0 z-0 animated-bg opacity-30" />
+
+      {/* Main Content Container (Responsive) */}
+      <div className="main-container relative z-10 container mx-auto px-4 py-8 flex">
         
-        <div className="relative z-10">
-          {/* 히어로 섹션 - 모바일 우선 최적화 */}
-          <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16 text-center">
-            <div className="mb-6 sm:mb-8">
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-hazelnut mb-3 sm:mb-4">
-                자리매
-              </h1>
-              <p className="text-lg sm:text-xl md:text-2xl text-brown-900 font-medium mb-2">
-                소상공인을 위한 똑똑한 자리 예약
-              </p>
-              <p className="text-base sm:text-lg text-gray-600">
-                손님과 사장님 모두 편안하게
-              </p>
-            </div>
-
-            {/* 검색 컨테이너 - 모바일 최적화 */}
-            <div className="max-w-4xl mx-auto">
-              <Card className="p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
-                {/* 탭 네비게이션 - 모바일에서 더 컴팩트하게 */}
-                <div className="flex justify-center gap-1 sm:gap-2 mb-4 sm:mb-6">
-                  {[
-                    { id: 'reservation', label: '예약', icon: '🍽️' },
-                    { id: 'delivery', label: '배달', icon: '🛵' },
-                    { id: 'waiting', label: '웨이팅', icon: '⏰' }
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleTabChange(tab.id as 'reservation' | 'delivery' | 'waiting')}
-                      className={`
-                        flex items-center gap-1 sm:gap-2 px-3 sm:px-4 md:px-6 py-2 sm:py-3 
-                        rounded-full font-medium transition-all duration-200 text-sm sm:text-base
-                        touch-manipulation min-h-[44px]
-                        ${searchState.activeTab === tab.id
-                          ? 'bg-hazelnut text-white shadow-md'
-                          : 'text-brown-900 hover:bg-hazelnut-50 active:bg-hazelnut-100'
-                        }
-                      `}
-                    >
-                      <span className="text-base sm:text-lg">{tab.icon}</span>
-                      <span className="hidden xs:inline sm:inline">{tab.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* 검색바 - 모바일 최적화 */}
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="text-center mb-3 sm:mb-4">
-                    <div className="text-3xl sm:text-4xl mb-2">{tabContent.icon}</div>
-                    <p className="text-sm sm:text-base text-gray-600">{tabContent.description}</p>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="flex-1">
-                      <Input
-                        placeholder={tabContent.placeholder}
-                        value={searchState.query}
-                        onChange={(value) => setSearchState(prev => ({ ...prev, query: value }))}
-                        onKeyDown={handleKeyPress}
-                        className="text-base sm:text-lg h-12 sm:h-14"
-                      />
-                    </div>
-                    <Button
-                      onClick={handleSearch}
-                      size="lg"
-                      className="w-full sm:w-auto sm:min-w-[120px] h-12 sm:h-14 text-base sm:text-lg font-medium"
-                    >
-                      검색
-                    </Button>
-                  </div>
-
-                  {/* 위치 설정 */}
-                  <div className="flex items-center justify-center gap-2 mt-4">
-                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <button
-                      onClick={handleLocationChange}
-                      className="text-sm text-gray-600 hover:text-hazelnut transition-colors"
-                    >
-                      {searchState.location} 📍
-                    </button>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </section>
-
-          {/* 대시보드 섹션 (로그인한 경우) - 모바일 최적화 */}
-          {isLoggedIn && (
-            <section className="container mx-auto px-4 py-6 sm:py-8">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                
-                {/* 내 예약 목록 - 모바일에서 더 컴팩트하게 */}
-                <div className="lg:col-span-2">
-                  <Card>
-                    <div className="p-4 sm:p-6">
-                      <h2 className="text-lg sm:text-xl font-bold text-brown-900 mb-3 sm:mb-4 flex items-center gap-2">
-                        📅 내 예약
-                        <span className="text-sm font-normal text-gray-500">
-                          ({myReservations.length}개)
-                        </span>
-                      </h2>
-                      
-                      <div className="space-y-3 sm:space-y-4">
-                        {myReservations.map((reservation) => (
-                          <div key={reservation.id} className="border rounded-lg p-3 sm:p-4 hover:shadow-sm transition-shadow touch-manipulation">
-                            <div className="flex items-start justify-between mb-2">
-                              <h3 className="font-semibold text-brown-900 text-sm sm:text-base flex-1 pr-2">
-                                {reservation.restaurantName}
-                              </h3>
-                              <span className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${
-                                reservation.status === 'confirmed' 
-                                  ? 'bg-green-100 text-green-700'
-                                  : reservation.status === 'pending'
-                                  ? 'bg-yellow-100 text-yellow-700'
-                                  : 'bg-red-100 text-red-700'
-                              }`}>
-                                {reservation.status === 'confirmed' ? '확정' : 
-                                 reservation.status === 'pending' ? '대기' : '취소'}
-                              </span>
-                            </div>
-                            <div className="text-xs sm:text-sm text-gray-600">
-                              📅 {reservation.date} {reservation.time} • 👥 {reservation.guests}명
-                            </div>
-                          </div>
-                        ))}
-                        
-                        {myReservations.length === 0 && (
-                          <div className="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
-                            아직 예약이 없습니다
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-
-                {/* 간단한 통계 */}
-                <div>
-                  <Card>
-                    <div className="p-6">
-                      <h2 className="text-xl font-bold text-brown-900 mb-4">
-                        📊 이번 달 활동
-                      </h2>
-                      
-                      <div className="space-y-4">
-                        <div className="text-center p-4 bg-hazelnut-50 rounded-lg">
-                          <div className="text-2xl font-bold text-hazelnut">3</div>
-                          <div className="text-sm text-gray-600">방문한 맛집</div>
-                        </div>
-                        
-                        <div className="text-center p-4 bg-muted-blue-50 rounded-lg">
-                          <div className="text-2xl font-bold text-muted-blue">5</div>
-                          <div className="text-sm text-gray-600">작성한 리뷰</div>
-                        </div>
-                        
-                        <div className="text-center p-4 bg-green-50 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">12</div>
-                          <div className="text-sm text-gray-600">적립한 포인트</div>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* CTA 섹션 (로그인하지 않은 경우) */}
-          {!isLoggedIn && (
-            <section className="container mx-auto px-4 py-16 text-center">
-              <Card className="max-w-2xl mx-auto p-8">
-                <h2 className="text-2xl font-bold text-brown-900 mb-4">
-                  자리매와 함께 시작해보세요
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  회원가입하고 더 많은 혜택을 받아보세요
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/auth/type">
-                    <Button size="lg" className="w-full sm:w-auto">
-                      회원가입하기
-                    </Button>
-                  </Link>
-                  <Link href="/auth/login">
-                    <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                      로그인하기
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-            </section>
-          )}
+        {/* Catchphrase and Logo */}
+        <div className="text-section flex-1">
+          <h1 className="text-6xl font-bold text-hazelnut md:text-8xl">자리매</h1>
+          <p className="mt-4 text-xl md:text-2xl font-bold text-brown-900 leading-snug">
+            소상공인을 위한<br className="md:hidden" />똑똑한 자리 예약
+          </p>
+          <p className="mt-2 text-lg md:text-xl text-brown-900 opacity-80">
+            손님과 사장님 모두 편안하게
+          </p>
         </div>
-      </main>
+        
+        {/* Login Card */}
+        <div className="flex-1 bg-white p-8 rounded-3xl login-card border border-gray-100 max-w-sm w-full">
+          <h2 className="text-2xl font-bold text-center mb-6">로그인</h2>
 
-      <Footer />
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form onSubmit={handleLogin}>
+            <div className="mb-4">
+              <label htmlFor="email" className="block text-sm font-medium mb-1">이메일</label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="이메일 주소 입력"
+                value={formData.email}
+                onChange={(value) => handleInputChange('email', value)}
+                disabled={isLoading}
+                className="w-full"
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label htmlFor="password" className="block text-sm font-medium mb-1">비밀번호</label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="비밀번호 입력"
+                  value={formData.password}
+                  onChange={(value) => handleInputChange('password', value)}
+                  disabled={isLoading}
+                  className="w-full pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  disabled={isLoading}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
+            </div>
+
+            {/* Remember Me Checkbox */}
+            <div className="mb-6 flex items-center justify-between">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.rememberMe}
+                  onChange={(e) => handleInputChange('rememberMe', e.target.checked)}
+                  className="w-4 h-4 text-hazelnut rounded border-gray-300 focus:ring-hazelnut"
+                  disabled={isLoading}
+                />
+                <span className="ml-2 text-sm text-gray-600">아이디 기억하기</span>
+              </label>
+              
+              <Link href="/auth/forgot-password" className="text-sm text-brown-900 hover:underline">
+                비밀번호 찾기
+              </Link>
+            </div>
+
+            <Button
+              type="submit"
+              loading={isLoading}
+              className="w-full bg-hazelnut hover:bg-muted-blue text-white font-bold py-3 rounded-full transition-colors"
+            >
+              로그인
+            </Button>
+          </form>
+
+          <div className="relative flex py-5 items-center">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="flex-shrink mx-4 text-gray-500">또는</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
+
+          {/* Social Login Buttons */}
+          <div className="space-y-3">
+            <button 
+              onClick={() => handleSocialLogin('kakao')}
+              className="w-full bg-muted-blue text-white font-bold py-3 rounded-full flex items-center justify-center space-x-2 hover:bg-opacity-80 transition-opacity"
+              disabled={isLoading}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7.9 20A9.3 9.3 0 0 1 4 16.1L2 22l5.9-2.1c2-.4 4.1-.6 6.1-.5 5.5.3 10.3-4.1 10.3-9.5S19.5 2.5 14 2.5 3.7 7 4.2 12.5" />
+              </svg>
+              <span>카카오로 시작하기</span>
+            </button>
+            
+            <button 
+              onClick={() => handleSocialLogin('naver')}
+              className="w-full bg-gray-500 text-white font-bold py-3 rounded-full flex items-center justify-center space-x-2 hover:bg-opacity-80 transition-opacity"
+              disabled={isLoading}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+              </svg>
+              <span>네이버로 시작하기</span>
+            </button>
+          </div>
+
+          {/* Sign Up Link */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              아직 계정이 없으신가요?{' '}
+              <Link href="/auth/type" className="text-hazelnut font-medium hover:underline">
+                회원가입하기
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Footer */}
+      <footer className="absolute bottom-4 left-0 right-0 text-center text-sm text-brown-900 opacity-60">
+        <p>Copyright © 2025 자리매. All Rights Reserved.</p>
+      </footer>
+
+      <style jsx>{`
+        .main-container {
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+        }
+        .text-section {
+          margin-bottom: 2.5rem;
+        }
+        .login-card {
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        @media (min-width: 768px) {
+          .main-container {
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 4rem;
+          }
+          .text-section {
+            margin-bottom: 0;
+            text-align: left;
+          }
+        }
+      `}</style>
     </div>
   )
 }

@@ -17,9 +17,10 @@ interface HeaderProps {
  */
 export default function Header({ className }: HeaderProps) {
   const pathname = usePathname()
-  const { isLoggedIn, user, logout } = useAuth()
+  const { isLoggedIn, user, logout, isLoading } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
 
   // 스크롤 감지
   useEffect(() => {
@@ -62,6 +63,16 @@ export default function Header({ className }: HeaderProps) {
   const handleLogout = () => {
     logout()
     setIsMobileMenuOpen(false)
+    setIsProfileDropdownOpen(false)
+  }
+
+  const toggleProfileDropdown = () => {
+    setIsProfileDropdownOpen(!isProfileDropdownOpen)
+  }
+
+  // 프로필 사진 생성 함수 (첫 글자 기반)
+  const getProfileInitial = (name?: string) => {
+    return name ? name.charAt(0).toUpperCase() : '🙂'
   }
 
   return (
@@ -112,14 +123,88 @@ export default function Header({ className }: HeaderProps) {
 
           {/* 로그인/회원가입 버튼 (데스크톱) */}
           <div className="hidden md:flex items-center space-x-3">
-            {isLoggedIn ? (
-              <div className="flex items-center space-x-3">
-                <span className="text-sm text-brown-900 font-medium">
-                  안녕하세요, {user?.name}님
-                </span>
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  로그아웃
-                </Button>
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-hazelnut border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-gray-500">로딩 중...</span>
+              </div>
+            ) : isLoggedIn ? (
+              <div className="relative">
+                {/* 프로필 버튼 */}
+                <button
+                  onClick={toggleProfileDropdown}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors mobile-tap"
+                >
+                  {/* 프로필 사진 */}
+                  <div className="w-8 h-8 bg-hazelnut text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                    {getProfileInitial(user?.name)}
+                  </div>
+                  <span className="text-sm text-brown-900 font-medium">
+                    {user?.name}님
+                  </span>
+                  <svg 
+                    className={`w-4 h-4 text-gray-500 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* 프로필 드롭다운 */}
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                    <Link 
+                      href="/profile"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 mobile-tap"
+                    >
+                      <svg className="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      프로필 설정
+                    </Link>
+                    <Link 
+                      href="/profile/reservations"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 mobile-tap"
+                    >
+                      <svg className="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7a2 2 0 012-2h3z" />
+                      </svg>
+                      내 예약
+                    </Link>
+                    <Link 
+                      href="/profile/reviews"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 mobile-tap"
+                    >
+                      <svg className="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
+                      내 리뷰
+                    </Link>
+                    <div className="border-t border-gray-100 my-2"></div>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 mobile-tap"
+                    >
+                      <svg className="w-4 h-4 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      로그아웃
+                    </button>
+                  </div>
+                )}
+
+                {/* 드롭다운 배경 오버레이 */}
+                {isProfileDropdownOpen && (
+                  <div 
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                  />
+                )}
               </div>
             ) : (
               <>

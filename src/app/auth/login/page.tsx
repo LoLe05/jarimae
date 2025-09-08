@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Card, Button, Input } from '@/components/ui'
@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext'
 interface FormData {
   email: string
   password: string
+  rememberMe: boolean
 }
 
 interface FormErrors {
@@ -26,8 +27,10 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     email: '',
-    password: ''
+    password: '',
+    rememberMe: false
   })
+  const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
 
   const validateForm = (): boolean => {
@@ -53,14 +56,22 @@ export default function LoginPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     
     // 에러 메시지 초기화
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
+    if (typeof field === 'string' && errors[field as keyof FormErrors]) {
+      setErrors(prev => ({ ...prev, [field as keyof FormErrors]: undefined }))
     }
   }
+
+  // 기억된 이메일 불러오기
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('jarimae_remembered_email')
+    if (rememberedEmail) {
+      setFormData(prev => ({ ...prev, email: rememberedEmail, rememberMe: true }))
+    }
+  }, [])
 
   const handleSubmit = async () => {
     if (!validateForm()) return
@@ -68,26 +79,20 @@ export default function LoginPage() {
     setIsLoading(true)
     
     try {
-      // TODO: 실제 로그인 API 호출
       console.log('Login data:', formData)
       
-      // 임시로 지연 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // 임시 사용자 데이터 (실제로는 API에서 받아옴)
-      const userData = {
-        id: '1',
-        name: '김자리',
-        email: formData.email,
-        phone: '010-1234-5678',
-        userType: 'customer' as const
+      // 기억하기 체크박스 처리
+      if (formData.rememberMe) {
+        localStorage.setItem('jarimae_remembered_email', formData.email)
+      } else {
+        localStorage.removeItem('jarimae_remembered_email')
       }
       
-      // 로그인 상태 저장
-      login(userData)
+      // 실제 로그인 API 호출
+      await login(formData.email, formData.password, formData.rememberMe)
       
-      // 로그인 성공 후 메인 페이지로 이동
-      router.push('/')
+      // 로그인 성공 후 메인 대시보드로 이동
+      router.push('/main')
     } catch (error) {
       console.error('Login error:', error)
       // 에러 처리 - 일반적인 로그인 실패 메시지
@@ -140,16 +145,41 @@ export default function LoginPage() {
               errorMessage={errors.email}
             />
 
-            <Input
-              id="password"
-              type="password"
-              placeholder="비밀번호"
-              value={formData.password}
-              onChange={(value) => handleInputChange('password', value)}
-              onKeyDown={handleKeyPress}
-              error={!!errors.password}
-              errorMessage={errors.password}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="비밀번호"
+                value={formData.password}
+                onChange={(value) => handleInputChange('password', value)}
+                onKeyDown={handleKeyPress}
+                error={!!errors.password}
+                errorMessage={errors.password}
+                className="pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                disabled={isLoading}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+
+            {/* 기억하기 체크박스 */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.rememberMe}
+                  onChange={(e) => handleInputChange('rememberMe', e.target.checked)}
+                  className="w-4 h-4 text-hazelnut rounded border-gray-300 focus:ring-hazelnut"
+                  disabled={isLoading}
+                />
+                <span className="ml-2 text-sm text-gray-600">아이디 기억하기</span>
+              </label>
+            </div>
 
             <Button
               onClick={handleSubmit}

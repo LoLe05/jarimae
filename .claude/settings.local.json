@@ -21,7 +21,13 @@
       "Bash(gh repo create:*)",
       "Bash(git remote add:*)",
       "Bash(git branch:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(dir)",
+      "Bash(dir prisma)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx prisma:*)",
+      "Bash(pg_ctl:*)",
+      "Bash(rd:*)"
     ],
     "deny": [],
     "ask": []

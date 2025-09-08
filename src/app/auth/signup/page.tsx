@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, Button, Input } from '@/components/ui'
+import { useAuth } from '@/contexts/AuthContext'
+import { apiClient, API_ENDPOINTS } from '@/lib/api-client'
+import { useToast } from '@/components/ui/Toast'
 import type { UserType } from '@/types'
 
 interface FormData {
@@ -47,10 +50,14 @@ interface FormErrors {
 export default function SignupPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { login } = useAuth()
+  const { showToast } = useToast()
   const userType = searchParams.get('type') as UserType | null
 
   const [currentStep, setCurrentStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     name: '',
     nickname: '',
@@ -178,21 +185,43 @@ export default function SignupPage() {
     setIsLoading(true)
     
     try {
-      // TODO: 실제 회원가입 API 호출
-      console.log('Signup data:', { ...formData, userType })
-      
-      // 임시로 지연 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // 회원가입 성공 후 적절한 페이지로 이동
-      if (isCustomer) {
-        router.push('/address/collect')
-      } else {
-        router.push('/partner/application/success')
+      // 회원가입 API 호출
+      const signupData = {
+        name: formData.name,
+        nickname: formData.nickname,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        userType: userType?.toUpperCase() || 'CUSTOMER',
+        termsAgreed: formData.termsAgreed,
+        privacyAgreed: formData.privacyAgreed,
+        marketingAgreed: formData.marketingAgreed
       }
-    } catch (error) {
+
+      // Mock 회원가입 (항상 성공)
+      console.log('🔐 Mock 회원가입 성공:', signupData)
+      
+      // 회원가입 성공 Toast 표시
+      showToast({
+        type: 'success',
+        title: '회원가입 성공',
+        message: `환영합니다, ${formData.name}님!`
+      })
+
+      // 회원가입 성공 후 로그인 페이지로 이동
+      setTimeout(() => {
+        router.push('/auth/login?email=' + encodeURIComponent(formData.email))
+      }, 1500) // 토스트 메시지를 볼 수 있도록 1.5초 대기
+    } catch (error: any) {
       console.error('Signup error:', error)
-      // 에러 처리
+      
+      // 에러 Toast 표시
+      showToast({
+        type: 'error',
+        title: '회원가입 실패',
+        message: error.message || '회원가입 중 오류가 발생했습니다'
+      })
     } finally {
       setIsLoading(false)
     }
@@ -338,25 +367,47 @@ export default function SignupPage() {
                   errorMessage={errors.email}
                 />
 
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="비밀번호 (8자 이상)"
-                  value={formData.password}
-                  onChange={(value) => handleInputChange('password', value)}
-                  error={!!errors.password}
-                  errorMessage={errors.password}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="비밀번호 (8자 이상)"
+                    value={formData.password}
+                    onChange={(value) => handleInputChange('password', value)}
+                    error={!!errors.password}
+                    errorMessage={errors.password}
+                    className="pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    disabled={isLoading}
+                  >
+                    {showPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
 
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="비밀번호 확인"
-                  value={formData.confirmPassword}
-                  onChange={(value) => handleInputChange('confirmPassword', value)}
-                  error={!!errors.confirmPassword}
-                  errorMessage={errors.confirmPassword}
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="비밀번호 확인"
+                    value={formData.confirmPassword}
+                    onChange={(value) => handleInputChange('confirmPassword', value)}
+                    error={!!errors.confirmPassword}
+                    errorMessage={errors.confirmPassword}
+                    className="pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    disabled={isLoading}
+                  >
+                    {showConfirmPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
 
                 {/* 약관 동의 */}
                 <div className="space-y-3">

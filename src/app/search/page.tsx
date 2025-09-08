@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, Button, Input } from '@/components/ui'
 import { Header, Footer } from '@/components/layout'
+import { apiClient, API_ENDPOINTS } from '@/lib/api-client'
+import { useToast } from '@/components/ui/Toast'
 
 interface Restaurant {
   id: string
@@ -37,12 +39,17 @@ interface FilterState {
 export default function SearchResultsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { showToast } = useToast()
   const query = searchParams.get('q') || ''
   const type = searchParams.get('type') || 'reservation'
+  const category = searchParams.get('category') || ''
+  const location = searchParams.get('location') || ''
 
   const [isLoading, setIsLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
   const [showFilters, setShowFilters] = useState(false)
+  const [totalResults, setTotalResults] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
   
   const [filterState, setFilterState] = useState<FilterState>({
     category: '',
@@ -52,51 +59,8 @@ export default function SearchResultsPage() {
     sortBy: 'popular'
   })
 
-  // 임시 레스토랑 데이터
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([
-    {
-      id: '1',
-      name: '맛있는 한식당',
-      category: '한식',
-      rating: 4.5,
-      reviewCount: 127,
-      distance: 0.3,
-      priceRange: '₩₩',
-      image: '/placeholder-restaurant.jpg',
-      tags: ['가족모임', '한정식', '깔끔함'],
-      availableTime: '18:00, 19:30 예약 가능',
-      address: '서울특별시 강남구 테헤란로 123',
-      phone: '02-1234-5678'
-    },
-    {
-      id: '2',
-      name: '이탈리안 레스토랑 비스트로',
-      category: '양식',
-      rating: 4.8,
-      reviewCount: 89,
-      distance: 0.5,
-      priceRange: '₩₩₩',
-      image: '/placeholder-restaurant.jpg',
-      tags: ['데이트', '파스타', '와인바'],
-      availableTime: '19:00, 20:30 예약 가능',
-      address: '서울특별시 강남구 강남대로 456',
-      phone: '02-2345-6789'
-    },
-    {
-      id: '3',
-      name: '스시마스터',
-      category: '일식',
-      rating: 4.7,
-      reviewCount: 203,
-      distance: 0.8,
-      priceRange: '₩₩₩₩',
-      image: '/placeholder-restaurant.jpg',
-      tags: ['초밥', '고급', '접대'],
-      availableTime: '18:30, 20:00 예약 가능',
-      address: '서울특별시 강남구 압구정로 789',
-      phone: '02-3456-7890'
-    }
-  ])
+  // 검색 결과 데이터
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
 
   const categories = ['전체', '한식', '양식', '일식', '중식', '카페', '치킨', '피자']
   const priceRanges = [
@@ -113,14 +77,106 @@ export default function SearchResultsPage() {
     { value: 'price', label: '가격순' }
   ]
 
-  useEffect(() => {
-    // 실제로는 API 호출
-    const timer = setTimeout(() => {
+  // 검색 실행 (Mock 데이터)
+  const performSearch = async () => {
+    setIsLoading(true)
+    try {
+      // Mock 레스토랑 데이터
+      const mockRestaurants: Restaurant[] = [
+        {
+          id: '1',
+          name: '맛있는 한식당',
+          category: '한식',
+          rating: 4.5,
+          reviewCount: 128,
+          distance: 0.5,
+          priceRange: '₩₩',
+          image: '/images/restaurant-1.jpg',
+          tags: ['가족식사', '점심메뉴', '주차가능'],
+          availableTime: '오늘 19:00~21:30',
+          address: '서울특별시 강남구 테헤란로 123',
+          phone: '02-1234-5678'
+        },
+        {
+          id: '2',
+          name: '이탈리안 레스토랑',
+          category: '양식',
+          rating: 4.2,
+          reviewCount: 89,
+          distance: 1.2,
+          priceRange: '₩₩₩',
+          image: '/images/restaurant-2.jpg',
+          tags: ['데이트', '와인', '분위기좋은'],
+          availableTime: '오늘 18:00~22:00',
+          address: '서울특별시 강남구 강남대로 456',
+          phone: '02-2345-6789'
+        },
+        {
+          id: '3',
+          name: '스시마스터',
+          category: '일식',
+          rating: 4.8,
+          reviewCount: 203,
+          distance: 0.8,
+          priceRange: '₩₩₩₩',
+          image: '/images/restaurant-3.jpg',
+          tags: ['신선한재료', '오마카세', '예약필수'],
+          availableTime: '오늘 17:30~20:00',
+          address: '서울특별시 강남구 압구정로 789',
+          phone: '02-3456-7890'
+        },
+        {
+          id: '4',
+          name: '브런치 카페',
+          category: '카페',
+          rating: 4.0,
+          reviewCount: 156,
+          distance: 1.5,
+          priceRange: '₩',
+          image: '/images/restaurant-4.jpg',
+          tags: ['브런치', '커피맛집', '인스타감성'],
+          availableTime: '오늘 09:00~17:00',
+          address: '서울특별시 서초구 서초대로 321',
+          phone: '02-4567-8901'
+        }
+      ]
+
+      // 검색어나 필터에 따라 결과 필터링 (간단한 시뮬레이션)
+      let filteredRestaurants = mockRestaurants
+      
+      if (query) {
+        filteredRestaurants = filteredRestaurants.filter(restaurant =>
+          restaurant.name.includes(query) || 
+          restaurant.category.includes(query) ||
+          restaurant.tags.some(tag => tag.includes(query))
+        )
+      }
+
+      if (filterState.category && filterState.category !== '전체') {
+        filteredRestaurants = filteredRestaurants.filter(restaurant =>
+          restaurant.category === filterState.category
+        )
+      }
+
+      // 짧은 지연 후 데이터 설정 (로딩 시뮬레이션)
+      setTimeout(() => {
+        setRestaurants(filteredRestaurants)
+        setTotalResults(filteredRestaurants.length)
+        setIsLoading(false)
+      }, 800)
+      
+    } catch (error) {
+      console.error('Search failed:', error)
+      setRestaurants([])
+      setTotalResults(0)
       setIsLoading(false)
-    }, 1000)
-    
-    return () => clearTimeout(timer)
-  }, [query, filterState])
+    }
+  }
+
+  // 검색 파라미터 변경 시 검색 실행 또는 페이지 로드 시 기본 데이터 표시
+  useEffect(() => {
+    performSearch() // 검색어가 없어도 기본 데이터 표시
+  }, [query, category, location, filterState, currentPage])
 
   const handleFilterChange = (key: keyof FilterState, value: any) => {
     setFilterState(prev => ({ ...prev, [key]: value }))
@@ -180,32 +236,32 @@ export default function SearchResultsPage() {
     <div className="min-h-screen bg-warm-gray">
       <Header />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 pt-24 pb-8 sm:pt-20 sm:pb-8">
         
-        {/* 검색 헤더 */}
+        {/* 검색 헤더 - 모바일 최적화 */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-brown-900 mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div className="flex-1">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-brown-900 mb-2 line-clamp-2">
                 {getServiceIcon()} '{query}' {getServiceLabel()} 검색 결과
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600">
                 총 {restaurants.length}개의 맛집을 찾았어요
               </p>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-end gap-2 sm:gap-3">
               {/* 보기 모드 전환 */}
               <div className="flex bg-white rounded-lg p-1 shadow-sm">
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-hazelnut text-white' : 'text-gray-600 hover:text-hazelnut'}`}
+                  className={`p-2 rounded text-sm mobile-tap ${viewMode === 'list' ? 'bg-hazelnut text-white' : 'text-gray-600 hover:text-hazelnut'}`}
                 >
                   📋
                 </button>
                 <button
                   onClick={() => setViewMode('map')}
-                  className={`p-2 rounded ${viewMode === 'map' ? 'bg-hazelnut text-white' : 'text-gray-600 hover:text-hazelnut'}`}
+                  className={`p-2 rounded text-sm mobile-tap ${viewMode === 'map' ? 'bg-hazelnut text-white' : 'text-gray-600 hover:text-hazelnut'}`}
                 >
                   🗺️
                 </button>
@@ -215,22 +271,26 @@ export default function SearchResultsPage() {
               <Button
                 onClick={() => setShowFilters(!showFilters)}
                 variant="outline"
-                className="flex items-center gap-2"
+                size="sm"
+                className="flex items-center gap-1 text-sm mobile-tap"
               >
-                🎛️ 필터
+                🎛️ <span className="hidden xs:inline">필터</span>
               </Button>
             </div>
           </div>
 
-          {/* 검색바 (재검색용) */}
-          <div className="flex gap-3 mb-4">
+          {/* 검색바 (재검색용) - 모바일 최적화 */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <div className="flex-1">
               <Input
                 placeholder={`${getServiceLabel()} 가능한 맛집을 검색하세요`}
                 defaultValue={query}
+                className="text-sm sm:text-base"
               />
             </div>
-            <Button>검색</Button>
+            <Button size="sm" className="w-full sm:w-auto mobile-tap">
+              검색
+            </Button>
           </div>
         </div>
 
@@ -327,26 +387,47 @@ export default function SearchResultsPage() {
           <div className="lg:col-span-3">
             
             {/* 정렬 옵션 */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-sm text-gray-600">
-                {restaurants.length}개 결과
+            {!isLoading && (
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-sm text-gray-600">
+                  {totalResults > 0 ? `${totalResults}개 결과` : '검색 결과 없음'}
+                </div>
+                <select
+                  value={filterState.sortBy}
+                  onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                  className="p-2 border border-gray-300 rounded-lg focus:border-hazelnut focus:outline-none"
+                >
+                  {sortOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <select
-                value={filterState.sortBy}
-                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                className="p-2 border border-gray-300 rounded-lg focus:border-hazelnut focus:outline-none"
-              >
-                {sortOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            )}
+
+            {/* 로딩 상태 */}
+            {isLoading && (
+              <div className="text-center py-12">
+                <div className="w-8 h-8 border-4 border-hazelnut border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-gray-500">검색 중...</p>
+              </div>
+            )}
+
+            {/* 검색 결과 없음 */}
+            {!isLoading && restaurants.length === 0 && query && (
+              <div className="text-center py-12">
+                <div className="mb-4 text-4xl">🔍</div>
+                <h3 className="text-lg font-medium text-brown-900 mb-2">검색 결과가 없습니다</h3>
+                <p className="text-gray-600 mb-4">다른 검색어나 필터를 사용해보세요.</p>
+                <Button onClick={resetFilters}>필터 초기화</Button>
+              </div>
+            )}
 
             {/* 레스토랑 카드 리스트 */}
-            <div className="space-y-4">
-              {restaurants.map(restaurant => (
+            {!isLoading && restaurants.length > 0 && (
+              <div className="space-y-4">
+                {restaurants.map(restaurant => (
                 <Card key={restaurant.id} className="hover:shadow-lg transition-shadow">
                   <div className="p-6">
                     <div className="flex gap-4">
@@ -357,15 +438,15 @@ export default function SearchResultsPage() {
 
                       {/* 레스토랑 정보 */}
                       <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                          <div className="flex-1 min-w-0">
                             <Link 
                               href={`/restaurant/${restaurant.id}`}
-                              className="text-lg font-semibold text-brown-900 hover:text-hazelnut transition-colors"
+                              className="text-base sm:text-lg font-semibold text-brown-900 hover:text-hazelnut transition-colors mobile-tap line-clamp-2"
                             >
                               {restaurant.name}
                             </Link>
-                            <div className="text-sm text-gray-600 flex items-center gap-2">
+                            <div className="text-xs sm:text-sm text-gray-600 flex items-center gap-2 mt-1">
                               <span>{restaurant.category}</span>
                               <span>•</span>
                               <span>{restaurant.priceRange}</span>
@@ -373,11 +454,11 @@ export default function SearchResultsPage() {
                               <span>📍 {restaurant.distance}km</span>
                             </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right flex-shrink-0">
                             <div className="flex items-center gap-1">
                               <span className="text-yellow-500">⭐</span>
-                              <span className="font-medium">{restaurant.rating}</span>
-                              <span className="text-gray-500 text-sm">({restaurant.reviewCount})</span>
+                              <span className="font-medium text-sm sm:text-base">{restaurant.rating}</span>
+                              <span className="text-gray-500 text-xs sm:text-sm">({restaurant.reviewCount})</span>
                             </div>
                           </div>
                         </div>
@@ -390,22 +471,22 @@ export default function SearchResultsPage() {
                           ))}
                         </div>
 
-                        <div className="text-sm text-gray-600 mb-3">
+                        <div className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">
                           📍 {restaurant.address}
                         </div>
 
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          <div className="text-xs sm:text-sm">
                             <span className="text-green-600 font-medium">
                               {restaurant.availableTime}
                             </span>
                           </div>
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                              📞 전화
+                            <Button variant="outline" size="sm" className="flex-1 sm:flex-none mobile-tap">
+                              📞 <span className="hidden xs:inline ml-1">전화</span>
                             </Button>
-                            <Link href={`/restaurant/${restaurant.id}`}>
-                              <Button size="sm">
+                            <Link href={`/restaurant/${restaurant.id}`} className="flex-1 sm:flex-none">
+                              <Button size="sm" className="w-full mobile-tap">
                                 {type === 'delivery' ? '주문하기' : 
                                  type === 'waiting' ? '웨이팅' : '예약하기'}
                               </Button>
@@ -416,19 +497,32 @@ export default function SearchResultsPage() {
                     </div>
                   </div>
                 </Card>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* 페이지네이션 */}
-            <div className="flex justify-center mt-8">
-              <div className="flex items-center gap-2">
-                <Button variant="outline" disabled>이전</Button>
-                <Button className="w-8 h-8 p-0">1</Button>
-                <Button variant="outline" className="w-8 h-8 p-0">2</Button>
-                <Button variant="outline" className="w-8 h-8 p-0">3</Button>
-                <Button variant="outline">다음</Button>
+            {!isLoading && restaurants.length > 0 && (
+              <div className="flex justify-center mt-8">
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    disabled={currentPage <= 1}
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  >
+                    이전
+                  </Button>
+                  <Button className="w-8 h-8 p-0">{currentPage}</Button>
+                  <Button 
+                    variant="outline" 
+                    disabled={restaurants.length < 20}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                  >
+                    다음
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>

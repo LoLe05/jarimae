@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // React Strict Mode 임시 비활성화 (AuthProvider 재마운트 문제 해결용)
+  reactStrictMode: false,
   experimental: {
     appDir: true,
     typedRoutes: true

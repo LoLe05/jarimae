@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { ToastProvider } from '@/components/ui/Toast'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { SkipLink } from '@/components/A11y'
 
@@ -144,9 +145,11 @@ export default function RootLayout({
         {/* 메인 콘텐츠 */}
         <div id="main-content" className="relative z-10 min-h-screen">
           <ErrorBoundary>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
+            <ToastProvider>
+              <AuthProvider>
+                {children}
+              </AuthProvider>
+            </ToastProvider>
           </ErrorBoundary>
         </div>
 
