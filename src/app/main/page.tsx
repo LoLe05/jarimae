@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Card, Button, Input } from '@/components/ui'
+import { Card, Button, Input, Map } from '@/components/ui'
 import { Calendar } from '@/components/ui/Calendar'
 import { Header, Footer } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
@@ -290,8 +290,14 @@ export default function MainDashboardPage() {
   }
 
   const handleLocationChange = () => {
-    console.log('Change location')
-    // TODO: 위치 변경 모달 또는 페이지
+    // 지도 섹션으로 스크롤
+    const mapSection = document.getElementById('map-section')
+    if (mapSection) {
+      mapSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      })
+    }
   }
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
@@ -334,25 +340,45 @@ export default function MainDashboardPage() {
         <div className="absolute inset-0 animated-bg opacity-30" />
         
         <div className="relative z-10">
-          {/* 히어로 섹션 - 모바일 우선 최적화 */}
-          <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16 text-center">
+          {/* 히어로 섹션 - 향상된 디자인 */}
+          <section className="container mx-auto px-4 py-6 sm:py-8 md:py-12 text-center">
             <div className="mb-6 sm:mb-8">
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-hazelnut mb-3 sm:mb-4">
-                자리매
-              </h1>
-              <p className="text-lg sm:text-xl md:text-2xl text-brown-900 font-medium mb-2">
-                소상공인을 위한 똑똑한 자리 예약
-              </p>
-              <p className="text-base sm:text-lg text-gray-600">
-                손님과 사장님 모두 편안하게
-              </p>
+              {/* 로고와 타이틀 */}
+              <div className="mb-6 mt-10 sm:mt-12">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-hazelnut mb-3 sm:mb-4">
+                  자리매
+                </h1>
+              </div>
+              
+              {/* 서브 타이틀과 설명 */}
+              <div className="max-w-2xl mx-auto">
+                <p className="text-lg sm:text-xl md:text-2xl text-brown-900 font-semibold mb-3">
+                  소상공인을 위한 똑똑한 자리 예약
+                </p>
+                <p className="text-base sm:text-lg text-gray-600 mb-6">
+                  손님과 사장님 모두 편안하게 🤝
+                </p>
+                
+                {/* 특징 배지들 */}
+                <div className="flex flex-wrap justify-center gap-3 mb-6">
+                  <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-soft border border-hazelnut/20">
+                    <span className="text-sm font-medium text-hazelnut">⚡ 실시간 예약</span>
+                  </div>
+                  <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-soft border border-muted-blue/20">
+                    <span className="text-sm font-medium text-muted-blue">🎯 맞춤 추천</span>
+                  </div>
+                  <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-soft border border-green-300">
+                    <span className="text-sm font-medium text-green-700">💎 등급 시스템</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* 검색 컨테이너 - 모바일 최적화 */}
+            {/* 검색 컨테이너 - 향상된 디자인 */}
             <div className="max-w-4xl mx-auto">
-              <Card className="p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
+              <Card className="p-4 sm:p-6 md:p-8 mb-4 sm:mb-6 bg-white/95 backdrop-blur-sm shadow-brand-lg border border-white/50">
                 {/* 탭 네비게이션 - 모바일에서 더 컴팩트하게 */}
-                <div className="flex justify-center gap-1 sm:gap-2 mb-4 sm:mb-6">
+                <div className="flex justify-center gap-1 sm:gap-2 mb-8 sm:mb-10">
                   {[
                     { id: 'reservation', label: '예약', icon: '🍽️' },
                     { id: 'delivery', label: '배달', icon: '🛵' },
@@ -363,11 +389,11 @@ export default function MainDashboardPage() {
                       onClick={() => handleTabChange(tab.id as 'reservation' | 'delivery' | 'waiting')}
                       className={`
                         flex items-center gap-1 sm:gap-2 px-3 sm:px-4 md:px-6 py-2 sm:py-3 
-                        rounded-full font-medium transition-all duration-200 text-sm sm:text-base
-                        touch-manipulation min-h-[44px]
+                        rounded-full font-medium transition-all duration-300 text-sm sm:text-base
+                        touch-manipulation min-h-[44px] transform hover:scale-105
                         ${searchState.activeTab === tab.id
-                          ? 'bg-hazelnut text-white shadow-md'
-                          : 'text-brown-900 hover:bg-hazelnut-50 active:bg-hazelnut-100'
+                          ? 'bg-hazelnut text-white shadow-brand scale-105'
+                          : 'text-brown-900 hover:bg-white/80 hover:shadow-soft active:bg-hazelnut-100 bg-white/50'
                         }
                       `}
                     >
@@ -378,24 +404,24 @@ export default function MainDashboardPage() {
                 </div>
 
                 {/* 검색바 - 모바일 최적화 */}
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="text-center mb-3 sm:mb-4">
-                    <div className="text-3xl sm:text-4xl mb-2">{tabContent.icon}</div>
+                <div className="space-y-4 sm:space-y-6">
+                  <div className="text-center mb-4 sm:mb-6">
+                    <div className="text-3xl sm:text-4xl mb-3">{tabContent.icon}</div>
                     <p className="text-sm sm:text-base text-gray-600">{tabContent.description}</p>
                   </div>
 
                   {/* 카테고리 필터 */}
-                  <div className="mb-4">
-                    <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2 mb-4">
+                  <div className="mb-6">
+                    <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2 mb-6">
                       {categories.map(category => (
                         <button
                           key={category.id}
                           onClick={() => handleCategorySelect(category.id)}
                           className={`
-                            flex flex-col items-center gap-1 p-2 sm:p-3 rounded-lg transition-all duration-200 mobile-tap
+                            flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl transition-all duration-300 mobile-tap transform hover:scale-105
                             ${searchState.selectedCategory === category.id
-                              ? 'bg-hazelnut text-white shadow-md'
-                              : 'bg-white hover:bg-hazelnut-50 border border-gray-200'
+                              ? 'bg-hazelnut text-white shadow-brand scale-105'
+                              : 'bg-white/80 backdrop-blur-sm hover:bg-white hover:shadow-soft border border-gray-200/50'
                             }
                           `}
                         >
@@ -406,7 +432,7 @@ export default function MainDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1">
                       <Input
                         placeholder={tabContent.placeholder}
@@ -419,14 +445,14 @@ export default function MainDashboardPage() {
                     <Button
                       onClick={handleSearch}
                       size="lg"
-                      className="w-full sm:w-auto sm:min-w-[120px] h-12 sm:h-14 text-base sm:text-lg font-medium"
+                      className="w-full sm:w-auto sm:min-w-[120px] h-12 sm:h-14 text-base sm:text-lg font-medium bg-hazelnut hover:bg-hazelnut-600 shadow-brand hover:shadow-brand-lg transform hover:scale-105 transition-all duration-300"
                     >
-                      검색
+                      🔍 검색
                     </Button>
                   </div>
 
                   {/* 위치 설정 */}
-                  <div className="flex items-center justify-center gap-2 mt-4">
+                  <div className="flex items-center justify-center gap-2 mt-6">
                     <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -443,132 +469,163 @@ export default function MainDashboardPage() {
             </div>
           </section>
 
-          {/* 대시보드 섹션 (로그인한 경우) - 모바일 최적화 */}
-          {isLoggedIn && (
-            <section className="container mx-auto px-4 py-6 sm:py-8">
-              {/* 캘린더 섹션 - 전체 너비 */}
-              <div className="mb-6 sm:mb-8">
-                <Calendar 
-                  events={convertToCalendarEvents(myReservations)}
-                  onDateClick={handleDateClick}
-                  onEventClick={handleEventClick}
-                />
+          {/* 오늘의 추천 매장 섹션 */}
+          <section className="container mx-auto px-4 py-6 sm:py-8">
+            <Card className="p-6 sm:p-8">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-brown-900 mb-2">
+                  ✨ 오늘의 추천 매장
+                </h2>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  등급과 구독에 따라 선별된 특별한 맛집들을 만나보세요
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                
-                {/* 내 예약 목록 - 모바일에서 더 컴팩트하게 */}
-                <div className="lg:col-span-2">
-                  <Card>
-                    <div className="p-4 sm:p-6">
-                      <h2 className="text-lg sm:text-xl font-bold text-brown-900 mb-3 sm:mb-4 flex items-center gap-2">
-                        📅 내 예약
-                        <span className="text-sm font-normal text-gray-500">
-                          ({myReservations.length}개)
+              {/* 추천 매장 그리드 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {[
+                  {
+                    id: 1,
+                    name: '사랑방 한정식',
+                    category: '한식',
+                    rating: 4.9,
+                    reviews: 127,
+                    badge: '사랑방',
+                    badgeColor: 'bg-blue-500',
+                    image: '🍚',
+                    description: '정성스런 한정식의 진수',
+                    distance: '0.3km',
+                    isPremium: true
+                  },
+                  {
+                    id: 2,
+                    name: '가온마루 이탈리안',
+                    category: '양식',
+                    rating: 4.7,
+                    reviews: 89,
+                    badge: '가온마루',
+                    badgeColor: 'bg-yellow-500',
+                    image: '🍝',
+                    description: '정통 이탈리안 파스타',
+                    distance: '0.7km',
+                    isPremium: true
+                  },
+                  {
+                    id: 3,
+                    name: '정착자 추천 카페',
+                    category: '카페',
+                    rating: 4.5,
+                    reviews: 56,
+                    badge: '정착자 혜택',
+                    badgeColor: 'bg-green-500',
+                    image: '☕',
+                    description: '아늑한 동네 카페',
+                    distance: '0.5km',
+                    isPremium: false
+                  }
+                ].map((restaurant) => (
+                  <Card key={restaurant.id} className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 cursor-pointer">
+                    {restaurant.isPremium && (
+                      <div className="absolute top-3 left-3 z-10">
+                        <span className={`px-2 py-1 text-xs text-white rounded-full ${restaurant.badgeColor}`}>
+                          {restaurant.badge}
                         </span>
-                      </h2>
+                      </div>
+                    )}
+                    
+                    <div className="p-4">
+                      <div className="text-center mb-4">
+                        <div className="text-4xl mb-2">{restaurant.image}</div>
+                        <h3 className="font-semibold text-brown-900 mb-1">{restaurant.name}</h3>
+                        <p className="text-sm text-gray-600 mb-2">{restaurant.description}</p>
+                      </div>
                       
-                      <div className="space-y-3 sm:space-y-4">
-                        {isLoadingReservations ? (
-                          <div className="text-center py-6 sm:py-8">
-                            <div className="w-6 h-6 border-4 border-hazelnut border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                            <p className="text-sm text-gray-500">예약 목록을 불러오는 중...</p>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-500">{restaurant.category}</span>
+                          <span className="text-gray-500">{restaurant.distance}</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <span className="text-yellow-500">⭐</span>
+                            <span className="font-medium">{restaurant.rating}</span>
+                            <span className="text-sm text-gray-500">({restaurant.reviews})</span>
                           </div>
-                        ) : myReservations.length > 0 ? (
-                          // 상태별로 정렬: pending -> confirmed -> completed -> cancelled
-                          myReservations
-                            .sort((a, b) => {
-                              const statusOrder = { 'pending': 0, 'confirmed': 1, 'completed': 2, 'cancelled': 3 }
-                              return statusOrder[a.status] - statusOrder[b.status]
-                            })
-                            .map((reservation) => {
-                              const isPast = new Date(reservation.date) < new Date()
-                              return (
-                                <div key={reservation.id} className={`
-                                  border rounded-lg p-3 sm:p-4 hover:shadow-sm transition-shadow touch-manipulation
-                                  ${isPast ? 'opacity-75' : ''}
-                                `}>
-                                  <div className="flex items-start justify-between mb-2">
-                                    <h3 className={`font-semibold text-sm sm:text-base flex-1 pr-2 ${
-                                      isPast ? 'text-gray-600' : 'text-brown-900'
-                                    }`}>
-                                      {reservation.restaurantName}
-                                    </h3>
-                                    <span className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${
-                                      reservation.status === 'confirmed' 
-                                        ? 'bg-green-100 text-green-700'
-                                        : reservation.status === 'pending'
-                                        ? 'bg-yellow-100 text-yellow-700'
-                                        : reservation.status === 'completed'
-                                        ? 'bg-blue-100 text-blue-700'
-                                        : 'bg-red-100 text-red-700'
-                                    }`}>
-                                      {reservation.status === 'confirmed' ? '확정' : 
-                                       reservation.status === 'pending' ? '대기' : 
-                                       reservation.status === 'completed' ? '완료' : '취소'}
-                                    </span>
-                                  </div>
-                                  <div className={`text-xs sm:text-sm ${
-                                    isPast ? 'text-gray-500' : 'text-gray-600'
-                                  }`}>
-                                    📅 {reservation.date} {reservation.time} • 👥 {reservation.guests}명
-                                    {reservation.specialRequest && (
-                                      <div className="mt-1 text-xs text-gray-500">
-                                        💬 {reservation.specialRequest}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )
-                            })
-                        ) : (
-                          <div className="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
-                            <div className="mb-3 text-3xl">📅</div>
-                            <p className="mb-2">아직 예약이 없습니다</p>
-                            <p className="text-xs">맛집을 검색해서 첫 예약을 만들어보세요!</p>
-                          </div>
-                        )}
+                          
+                          <Button size="sm" className="text-xs">
+                            예약하기
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </Card>
-                </div>
+                ))}
+              </div>
 
-                {/* 간단한 통계 */}
-                <div>
-                  <Card>
-                    <div className="p-6">
-                      <h2 className="text-xl font-bold text-brown-900 mb-4">
-                        📊 이번 달 활동
-                      </h2>
-                      
-                      <div className="space-y-4">
-                        {isLoadingStats ? (
-                          <div className="text-center py-6">
-                            <div className="w-6 h-6 border-4 border-hazelnut border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                            <p className="text-sm text-gray-500">통계를 불러오는 중...</p>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="text-center p-4 bg-hazelnut-50 rounded-lg">
-                              <div className="text-2xl font-bold text-hazelnut">{monthlyStats.visitedRestaurants}</div>
-                              <div className="text-sm text-gray-600">방문한 맛집</div>
-                            </div>
-                            
-                            <div className="text-center p-4 bg-muted-blue-50 rounded-lg">
-                              <div className="text-2xl font-bold text-muted-blue">{monthlyStats.writtenReviews}</div>
-                              <div className="text-sm text-gray-600">작성한 리뷰</div>
-                            </div>
-                            
-                            <div className="text-center p-4 bg-green-50 rounded-lg">
-                              <div className="text-2xl font-bold text-green-600">{monthlyStats.earnedPoints}</div>
-                              <div className="text-sm text-gray-600">적립한 포인트</div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
+              {/* 더보기 버튼 */}
+              <div className="text-center mt-8">
+                <Button variant="outline" className="px-8">
+                  더 많은 추천 매장 보기
+                </Button>
+              </div>
+
+              {/* 혜택 안내 */}
+              <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-dashed border-2 border-blue-200">
+                <div className="text-center">
+                  <h4 className="font-semibold text-brown-900 mb-2">
+                    🎯 더 많은 프리미엄 매장을 원하시나요?
+                  </h4>
+                  <p className="text-sm text-gray-600 mb-3">
+                    등급을 올리거나 구독을 통해 특별한 매장들을 만나보세요
+                  </p>
+                  <div className="flex justify-center gap-3">
+                    <Link href="/ranks/user">
+                      <Button variant="outline" size="sm">
+                        등급 시스템 보기
+                      </Button>
+                    </Link>
+                    <Link href="/subscription/user">
+                      <Button size="sm">
+                        구독하기
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
+              </div>
+            </Card>
+          </section>
+
+          {/* 지도 섹션 - 모든 사용자에게 표시 */}
+          <section id="map-section" className="container mx-auto px-4 py-4 sm:py-6">
+            <Map 
+              selectedCategory={searchState.selectedCategory}
+              onRestaurantClick={(restaurant) => {
+                console.log('식당 클릭:', restaurant)
+                // 식당 페이지로 이동
+                window.location.href = `/restaurant/${restaurant.id}`
+              }}
+              className="mb-4 sm:mb-6"
+            />
+          </section>
+
+          {/* 대시보드 섹션 (로그인한 경우) - 모바일 최적화 */}
+          {isLoggedIn && (
+            <section className="container mx-auto px-4 py-4 sm:py-6">
+              {/* 캘린더 섹션 - 중앙 정렬 */}
+              <div className="max-w-4xl mx-auto">
+                <Card>
+                  <div className="p-4 sm:p-6">
+                    <h2 className="text-lg sm:text-xl font-bold text-brown-900 mb-3 sm:mb-4">
+                      📆 예약 캘린더
+                    </h2>
+                    <Calendar 
+                      events={convertToCalendarEvents(myReservations)}
+                      onDateClick={handleDateClick}
+                      onEventClick={handleEventClick}
+                    />
+                  </div>
+                </Card>
               </div>
             </section>
           )}

@@ -1,3 +1,5 @@
+'use client'
+
 import React, { forwardRef, useState } from 'react'
 import { clsx } from 'clsx'
 import type { InputProps } from '@/types'

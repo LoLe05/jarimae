@@ -35,6 +35,19 @@
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
+  
+  /* 방향 전환 시 부드러운 전환 */
+  @media screen and (orientation: portrait) {
+    body {
+      transition: all 0.3s ease;
+    }
+  }
+  
+  @media screen and (orientation: landscape) {
+    body {
+      transition: all 0.3s ease;
+    }
+  }
 
   /* 스크롤바 스타일링 */
   ::-webkit-scrollbar {
@@ -177,6 +190,30 @@
 }
 
 @layer utilities {
+  /* 점수 시각화 애니메이션 */
+  @keyframes scoreGlow {
+    0%, 100% { 
+      box-shadow: 0 0 5px rgba(177, 150, 123, 0.5);
+      transform: scale(1);
+    }
+    50% { 
+      box-shadow: 0 0 15px rgba(177, 150, 123, 0.8);
+      transform: scale(1.05);
+    }
+  }
+  
+  @keyframes chartBar {
+    from { height: 0; }
+    to { height: var(--bar-height); }
+  }
+  
+  .score-pulse {
+    animation: scoreGlow 2s ease-in-out infinite;
+  }
+  
+  .chart-bar-animate {
+    animation: chartBar 0.8s ease-out forwards;
+  }
   /* 자리매 전용 유틸리티 클래스 */
   
   /* 텍스트 그라데이션 */
@@ -210,6 +247,40 @@
   .animate-delay-200 {
     animation-delay: 200ms;
   }
+
+  /* 등급 페이지 전용 애니메이션 */
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background-size: 200px 100%;
+    animation: shimmer 2s infinite;
+  }
   
   .animate-delay-300 {
     animation-delay: 300ms;
@@ -240,6 +311,50 @@
 
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-area-right {
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* 모바일 세로 모드 최적화 */
+  @media screen and (orientation: portrait) and (max-width: 768px) {
+    .mobile-portrait-full {
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    
+    .mobile-portrait-container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
+  /* 모바일 가로 모드 최적화 */
+  @media screen and (orientation: landscape) and (max-height: 500px) {
+    .mobile-landscape-compact {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+    
+    .mobile-landscape-text {
+      font-size: 0.875rem;
+    }
+  }
+
+  /* 작은 모바일 디바이스 */
+  @media screen and (max-width: 375px) {
+    .mobile-sm-text {
+      font-size: 0.875rem;
+    }
+    
+    .mobile-sm-padding {
+      padding: 0.75rem;
+    }
   }
 
   /* 트렁케이트 확장 */

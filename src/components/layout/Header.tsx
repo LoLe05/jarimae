@@ -47,6 +47,7 @@ export default function Header({ className }: HeaderProps) {
 
   const navigation = [
     { name: '매장 찾기', href: '/search' },
+    { name: '등급 시스템', href: '/ranks/user' },
     { name: '내 예약', href: '/profile/reservations' },
     { name: '사장님', href: '/partner/dashboard' }
   ]
@@ -70,9 +71,10 @@ export default function Header({ className }: HeaderProps) {
     setIsProfileDropdownOpen(!isProfileDropdownOpen)
   }
 
-  // 프로필 사진 생성 함수 (첫 글자 기반)
-  const getProfileInitial = (name?: string) => {
-    return name ? name.charAt(0).toUpperCase() : '🙂'
+  // 프로필 사진 생성 함수 (아바타 우선, 없으면 첫 글자)
+  const getProfileDisplay = (user?: any) => {
+    if (user?.avatar) return user.avatar
+    return user?.name ? user.name.charAt(0).toUpperCase() : '🙂'
   }
 
   return (
@@ -87,35 +89,36 @@ export default function Header({ className }: HeaderProps) {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* 로고 */}
+          {/* 향상된 로고 */}
           <Link 
-            href="/"
-            className="flex items-center space-x-2 group"
+            href="/main"
+            className="flex items-center space-x-3 group"
           >
-            <div className="text-2xl md:text-3xl font-bold text-hazelnut transition-transform group-hover:scale-105">
+            <div className="text-2xl md:text-3xl font-bold text-hazelnut group-hover:text-hazelnut transition-all duration-300">
               자리매
             </div>
           </Link>
 
-          {/* 데스크톱 네비게이션 */}
-          <nav className="hidden md:flex items-center space-x-8">
+          {/* 향상된 데스크톱 네비게이션 */}
+          <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
                 className={clsx(
-                  'text-sm font-medium transition-colors duration-200 relative',
-                  'hover:text-hazelnut focus:text-hazelnut',
-                  'focus:outline-none focus:ring-2 focus:ring-hazelnut focus:ring-opacity-50 rounded-md px-2 py-1',
+                  'group flex items-center px-3 py-2 rounded-xl text-sm font-medium transition-all duration-300 relative',
+                  'hover:scale-105 hover:bg-white/80 hover:shadow-soft transform',
+                  'focus:outline-none focus:ring-2 focus:ring-hazelnut focus:ring-opacity-50',
                   isActive(item.href)
-                    ? 'text-hazelnut'
-                    : 'text-brown-900'
+                    ? 'bg-hazelnut text-white shadow-brand scale-105'
+                    : 'text-brown-900 hover:text-hazelnut bg-white/50 backdrop-blur-sm'
                 )}
               >
-                {item.name}
-                {/* 활성 상태 인디케이터 */}
-                {isActive(item.href) && (
-                  <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-hazelnut rounded-full" />
+                <span className="font-medium">{item.name}</span>
+                
+                {/* 호버 시 글로우 효과 */}
+                {!isActive(item.href) && (
+                  <div className="absolute inset-0 bg-hazelnut/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                 )}
               </Link>
             ))}
@@ -130,20 +133,29 @@ export default function Header({ className }: HeaderProps) {
               </div>
             ) : isLoggedIn ? (
               <div className="relative">
-                {/* 프로필 버튼 */}
+                {/* 향상된 프로필 버튼 */}
                 <button
                   onClick={toggleProfileDropdown}
-                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors mobile-tap"
+                  className="group flex items-center space-x-3 px-3 py-2 rounded-xl bg-white/80 backdrop-blur-sm hover:bg-white hover:shadow-soft transition-all duration-300 mobile-tap transform hover:scale-105"
                 >
-                  {/* 프로필 사진 */}
-                  <div className="w-8 h-8 bg-hazelnut text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    {getProfileInitial(user?.name)}
+                  {/* 향상된 프로필 사진 */}
+                  <div className="relative">
+                    <div className="w-8 h-8 bg-hazelnut text-white rounded-full flex items-center justify-center text-sm font-semibold shadow-brand group-hover:shadow-brand-lg transition-shadow duration-300">
+                      {getProfileDisplay(user)}
+                    </div>
+                    {/* 온라인 상태 표시 */}
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                   </div>
-                  <span className="text-sm text-brown-900 font-medium">
-                    {user?.name}님
-                  </span>
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm text-brown-900 font-medium group-hover:text-hazelnut transition-colors duration-300">
+                      {user?.name}님
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      프로필 보기
+                    </span>
+                  </div>
                   <svg 
-                    className={`w-4 h-4 text-gray-500 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 text-gray-500 group-hover:text-hazelnut transition-all duration-300 ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -152,9 +164,9 @@ export default function Header({ className }: HeaderProps) {
                   </svg>
                 </button>
 
-                {/* 프로필 드롭다운 */}
+                {/* 향상된 프로필 드롭다운 */}
                 {isProfileDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                  <div className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-md rounded-xl shadow-brand-lg border border-white/50 py-3 z-50 animate-in slide-in-from-top-2 duration-200">
                     <Link 
                       href="/profile"
                       onClick={() => setIsProfileDropdownOpen(false)}
@@ -163,7 +175,7 @@ export default function Header({ className }: HeaderProps) {
                       <svg className="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      프로필 설정
+                      마이페이지
                     </Link>
                     <Link 
                       href="/profile/reservations"
@@ -207,18 +219,26 @@ export default function Header({ className }: HeaderProps) {
                 )}
               </div>
             ) : (
-              <>
+              <div className="flex items-center space-x-3">
                 <Link href="/auth/login">
-                  <Button variant="ghost" size="sm">
-                    로그인
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white hover:shadow-soft transition-all duration-300 transform hover:scale-105"
+                  >
+                    🔑 로그인
                   </Button>
                 </Link>
                 <Link href="/auth/type">
-                  <Button variant="primary" size="sm">
-                    시작하기
+                  <Button 
+                    variant="primary" 
+                    size="sm"
+                    className="px-4 py-2 bg-hazelnut hover:bg-hazelnut-600 shadow-brand hover:shadow-brand-lg transform hover:scale-105 transition-all duration-300"
+                  >
+                    ✨ 시작하기
                   </Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
 
@@ -256,39 +276,58 @@ export default function Header({ className }: HeaderProps) {
         </div>
       </div>
 
-      {/* 모바일 메뉴 */}
+      {/* 향상된 모바일 메뉴 */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 shadow-soft">
-          <div className="container mx-auto px-4 py-4 space-y-4">
-            {/* 모바일 네비게이션 */}
-            <nav className="space-y-2">
+        <div className="md:hidden bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-brand">
+          <div className="container mx-auto px-4 py-6 space-y-6">
+            {/* 향상된 모바일 네비게이션 */}
+            <nav className="space-y-3">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={clsx(
-                    'block px-3 py-2 rounded-lg text-base font-medium transition-colors',
+                    'flex items-center px-4 py-3 rounded-xl text-base font-medium transition-all duration-300 transform',
                     'focus:outline-none focus:ring-2 focus:ring-hazelnut focus:ring-opacity-50',
+                    'hover:scale-105 active:scale-95',
                     isActive(item.href)
-                      ? 'text-hazelnut bg-hazelnut/10'
-                      : 'text-brown-900 hover:bg-gray-50'
+                      ? 'bg-hazelnut text-white shadow-brand'
+                      : 'text-brown-900 hover:bg-white/80 hover:shadow-soft bg-white/50 backdrop-blur-sm'
                   )}
                 >
-                  {item.name}
+                  <span>{item.name}</span>
+                  {isActive(item.href) && (
+                    <span className="ml-auto text-sm">✓</span>
+                  )}
                 </Link>
               ))}
             </nav>
 
-            {/* 모바일 로그인/회원가입 */}
-            <div className="border-t border-gray-100 pt-4 space-y-2">
+            {/* 향상된 모바일 로그인/회원가입 */}
+            <div className="border-t border-gray-100/50 pt-6 space-y-3">
               {isLoggedIn ? (
                 <>
-                  <div className="text-sm text-brown-900 font-medium px-3 py-2">
-                    안녕하세요, {user?.name}님
+                  <div className="flex items-center space-x-3 px-4 py-3 bg-white/80 backdrop-blur-sm rounded-xl">
+                    <div className="w-10 h-10 bg-hazelnut text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                      {getProfileDisplay(user)}
+                    </div>
+                    <div>
+                      <div className="text-sm text-brown-900 font-medium">
+                        안녕하세요, {user?.name}님
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        자리매와 함께해요 🎉
+                      </div>
+                    </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="w-full justify-start" onClick={handleLogout}>
-                    로그아웃
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full justify-start bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 transition-all duration-300" 
+                    onClick={handleLogout}
+                  >
+                    🚪 로그아웃
                   </Button>
                 </>
               ) : (
@@ -297,16 +336,24 @@ export default function Header({ className }: HeaderProps) {
                     href="/auth/login"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <Button variant="ghost" size="sm" className="w-full justify-start">
-                      로그인
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full justify-start bg-white/80 backdrop-blur-sm hover:bg-white hover:shadow-soft transition-all duration-300"
+                    >
+                      🔑 로그인
                     </Button>
                   </Link>
                   <Link 
                     href="/auth/type"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <Button variant="primary" size="sm" className="w-full">
-                      시작하기
+                    <Button 
+                      variant="primary" 
+                      size="sm" 
+                      className="w-full bg-hazelnut hover:bg-hazelnut-600 shadow-brand hover:shadow-brand-lg transition-all duration-300"
+                    >
+                      ✨ 시작하기
                     </Button>
                   </Link>
                 </>

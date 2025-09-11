@@ -11,6 +11,7 @@ interface User {
   phone?: string
   userType: 'customer' | 'owner' | 'admin'
   nickname?: string
+  avatar?: string
   profileImage?: string
   emailVerified?: boolean
   createdAt?: string
@@ -84,6 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: email,
         userType: 'customer' as const,
         phone: '010-0000-0000',
+        avatar: '🙋‍♂️',
         emailVerified: false,
         profileImage: null,
         createdAt: new Date().toISOString()

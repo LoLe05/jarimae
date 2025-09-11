@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { Card, Button } from '@/components/ui'
+import { Calendar } from '@/components/ui/Calendar'
 import { Header, Footer } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -20,6 +21,15 @@ interface ReservationItem {
   createdAt: string
 }
 
+interface CalendarEvent {
+  id: string
+  title: string
+  date: string
+  time: string
+  status: 'confirmed' | 'pending' | 'cancelled' | 'completed'
+  guests: number
+}
+
 /**
  * 내 예약 페이지
  * 경로: /profile/reservations
@@ -27,6 +37,27 @@ interface ReservationItem {
 export default function MyReservationsPage() {
   const { user, isLoggedIn } = useAuth()
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming')
+
+  // 예약 데이터를 캘린더 이벤트로 변환
+  const convertToCalendarEvents = (reservations: ReservationItem[]): CalendarEvent[] => {
+    return reservations.map(reservation => ({
+      id: reservation.id,
+      title: reservation.restaurantName,
+      date: reservation.date,
+      time: reservation.time,
+      status: reservation.status,
+      guests: reservation.guests
+    }))
+  }
+
+  // 캘린더 이벤트 핸들러
+  const handleDateClick = (date: Date) => {
+    console.log('날짜 클릭:', date.toDateString())
+  }
+
+  const handleEventClick = (event: CalendarEvent) => {
+    console.log('이벤트 클릭:', event)
+  }
 
   // 임시 예약 데이터
   const [reservations] = useState<ReservationItem[]>([
@@ -165,6 +196,15 @@ export default function MyReservationsPage() {
           <p className="text-sm sm:text-base text-gray-600">
             {user?.name}님의 예약 내역을 확인하세요
           </p>
+        </div>
+
+        {/* 캘린더 섹션 */}
+        <div className="mb-6">
+          <Calendar
+            events={convertToCalendarEvents(reservations)}
+            onDateClick={handleDateClick}
+            onEventClick={handleEventClick}
+          />
         </div>
 
         {/* 탭 네비게이션 */}

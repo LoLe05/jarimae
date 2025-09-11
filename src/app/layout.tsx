@@ -5,6 +5,8 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { ToastProvider } from '@/components/ui/Toast'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { SkipLink } from '@/components/A11y'
+import DolsoeChat from '@/components/ai/DolsoeChat'
+import { FloatingPromotion } from '@/components/ui'
 
 // 폰트 설정
 const inter = Inter({ 
@@ -148,6 +150,8 @@ export default function RootLayout({
             <ToastProvider>
               <AuthProvider>
                 {children}
+                <DolsoeChat />
+                <FloatingPromotion />
               </AuthProvider>
             </ToastProvider>
           </ErrorBoundary>

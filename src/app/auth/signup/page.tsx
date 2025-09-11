@@ -56,8 +56,6 @@ export default function SignupPage() {
 
   const [currentStep, setCurrentStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     name: '',
     nickname: '',
@@ -373,47 +371,25 @@ export default function SignupPage() {
                   errorMessage={errors.email}
                 />
 
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="비밀번호 (8자 이상)"
-                    value={formData.password}
-                    onChange={(value) => handleInputChange('password', value)}
-                    error={!!errors.password}
-                    errorMessage={errors.password}
-                    className="pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                    disabled={isLoading}
-                  >
-                    {showPassword ? '🙈' : '👁️'}
-                  </button>
-                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="비밀번호 (8자 이상)"
+                  value={formData.password}
+                  onChange={(value) => handleInputChange('password', value)}
+                  error={!!errors.password}
+                  errorMessage={errors.password}
+                />
 
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder="비밀번호 확인"
-                    value={formData.confirmPassword}
-                    onChange={(value) => handleInputChange('confirmPassword', value)}
-                    error={!!errors.confirmPassword}
-                    errorMessage={errors.confirmPassword}
-                    className="pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                    disabled={isLoading}
-                  >
-                    {showConfirmPassword ? '🙈' : '👁️'}
-                  </button>
-                </div>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="비밀번호 확인"
+                  value={formData.confirmPassword}
+                  onChange={(value) => handleInputChange('confirmPassword', value)}
+                  error={!!errors.confirmPassword}
+                  errorMessage={errors.confirmPassword}
+                />
 
                 {/* 약관 동의 */}
                 <div className="space-y-3">

@@ -129,7 +129,7 @@ export default function UserSubscriptionPage() {
               <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-6">
                 <h3 className="text-lg font-semibold mb-2">🎁 신규 가입 혜택</h3>
                 <p className="text-sm opacity-90">
-                  첫 구독 시 <strong>20% 할인</strong> + <strong>첫 달 무료</strong> 혜택을 받으세요!
+                  첫 구독 시 <strong>20% 할인</strong> 혜택을 받으세요!
                 </p>
               </div>
               <p className="text-sm opacity-80">
@@ -156,86 +156,159 @@ export default function UserSubscriptionPage() {
 
         {/* 플랜 카드들 */}
         <div className="grid md:grid-cols-3 gap-8 mb-12">
-          {plans.map((plan) => (
+          {plans.map((plan, index) => (
             <Card
               key={plan.id}
-              className={`relative transition-all duration-300 hover:scale-105 cursor-pointer ${
-                selectedPlan === plan.id ? 'ring-4 ring-hazelnut ring-opacity-50' : ''
-              } ${plan.premium ? 'border-2 border-muted-blue' : ''}`}
+              className={`relative transition-all duration-500 hover:scale-105 cursor-pointer p-6 min-h-[520px] flex flex-col ${
+                selectedPlan === plan.id ? 'ring-4 ring-hazelnut ring-opacity-50 shadow-2xl' : 'shadow-lg hover:shadow-2xl'
+              } ${
+                plan.premium ? 'border-2 border-muted-blue bg-gradient-to-br from-blue-50 to-white' : 
+                plan.recommended ? 'border-2 border-hazelnut bg-gradient-to-br from-orange-50 to-white' :
+                'border border-gray-200 bg-white'
+              }`}
               onClick={() => handleSelectPlan(plan.id)}
+              style={{
+                animationDelay: `${index * 150}ms`,
+                transform: 'translateY(20px)',
+                animation: `slideInUp 0.6s ease-out ${index * 150}ms forwards`
+              }}
             >
-              {plan.recommended && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-hazelnut text-white px-4 py-1 rounded-full text-sm font-medium">
-                    인기
+              {/* 상단 배지들 */}
+              <div className="absolute -top-3 left-0 right-0 flex justify-between items-start px-4">
+                {plan.recommended && (
+                  <span className="bg-gradient-to-r from-hazelnut to-orange-500 text-white px-4 py-1 rounded-full text-sm font-medium shadow-lg">
+                    ⭐ 인기
                   </span>
-                </div>
-              )}
-              
-              {plan.premium && (
-                <div className="absolute -top-4 right-4">
-                  <span className="bg-muted-blue text-white px-3 py-1 rounded-full text-xs font-medium">
-                    PREMIUM
+                )}
+                {plan.premium && (
+                  <span className="bg-gradient-to-r from-muted-blue to-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
+                    💎 PREMIUM
                   </span>
-                </div>
-              )}
+                )}
+              </div>
 
-              <div className="text-center mb-6">
-                <div className={`w-20 h-20 rounded-full ${plan.color} mx-auto mb-4 flex items-center justify-center`}>
-                  <span className="text-3xl">{plan.icon}</span>
+              {/* 헤더 섹션 - 고정 높이 */}
+              <div className="text-center mb-4 flex-shrink-0">
+                <div 
+                  className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center relative ${
+                    plan.id === 'free' ? 'bg-gradient-to-br from-gray-100 to-gray-200' :
+                    plan.recommended ? 'bg-gradient-to-br from-hazelnut to-orange-400' :
+                    plan.premium ? 'bg-gradient-to-br from-muted-blue to-blue-500' :
+                    'bg-gradient-to-br from-gray-100 to-gray-200'
+                  }`}
+                >
+                  <span className={`text-2xl ${
+                    plan.id === 'free' ? '' : 'filter drop-shadow-sm'
+                  }`}>
+                    {plan.icon}
+                  </span>
+                  {/* 아이콘 글로우 효과 */}
+                  {plan.id !== 'free' && (
+                    <div className={`absolute inset-0 rounded-full opacity-30 ${
+                      plan.recommended ? 'bg-hazelnut' : 'bg-muted-blue'
+                    } blur-lg`}></div>
+                  )}
                 </div>
                 
-                <h3 className="text-2xl font-bold text-brown-900 mb-2">{plan.name}</h3>
-                <p className="text-gray-600 mb-4">{plan.description}</p>
+                <h3 className="text-xl font-bold text-brown-900 mb-2">{plan.name}</h3>
+                <p className="text-gray-600 mb-3 text-sm leading-tight">
+                  {plan.description}
+                </p>
                 
+                {/* 가격 섹션 - 통일된 스타일 */}
                 <div className="mb-4">
-                  <span className="text-4xl font-bold text-brown-900">{plan.priceText}</span>
-                  {plan.price > 0 && <span className="text-gray-500 ml-1">/월</span>}
+                  <div className="flex items-baseline justify-center">
+                    <span className={`text-3xl font-bold ${
+                      plan.id === 'free' ? 'text-gray-700' :
+                      plan.recommended ? 'text-hazelnut' :
+                      plan.premium ? 'text-muted-blue' :
+                      'text-brown-900'
+                    }`}>
+                      {plan.priceText}
+                    </span>
+                    {plan.price > 0 && <span className="text-gray-500 ml-1 text-base">/월</span>}
+                  </div>
+                  {plan.id === 'free' && (
+                    <p className="text-sm text-gray-500 mt-1">평생 무료</p>
+                  )}
                 </div>
               </div>
 
-              <div className="space-y-3 mb-8">
-                {plan.features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-hazelnut rounded-full flex-shrink-0"></div>
-                    <span className="text-gray-700">{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              {plan.limitations && (
-                <div className="border-t pt-4 mb-6">
-                  <p className="text-sm text-gray-500 mb-2">제한사항:</p>
-                  {plan.limitations.map((limitation, index) => (
-                    <div key={index} className="flex items-center gap-3 mb-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full flex-shrink-0"></div>
-                      <span className="text-sm text-gray-500">{limitation}</span>
+              {/* 기능 목록 - 확장 가능한 영역 */}
+              <div className="flex-1 mb-4">
+                <div className="space-y-2 mb-4">
+                  {plan.features.map((feature, featureIndex) => (
+                    <div 
+                      key={featureIndex} 
+                      className="flex items-start gap-2 p-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                      style={{
+                        animationDelay: `${(index * 150) + (featureIndex * 100)}ms`,
+                        opacity: 0,
+                        animation: `fadeInLeft 0.5s ease-out ${(index * 150) + (featureIndex * 100)}ms forwards`
+                      }}
+                    >
+                      <div className={`w-3 h-3 rounded-full flex-shrink-0 mt-1 ${
+                        plan.id === 'free' ? 'bg-gray-400' :
+                        plan.recommended ? 'bg-hazelnut' :
+                        plan.premium ? 'bg-muted-blue' :
+                        'bg-gray-400'
+                      }`}></div>
+                      <span className="text-gray-700 text-xs leading-snug">{feature}</span>
                     </div>
                   ))}
                 </div>
-              )}
 
-              {plan.groupFeature && (
-                <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                  <p className="text-sm text-muted-blue font-medium mb-2">👥 그룹 혜택</p>
-                  <p className="text-xs text-gray-600">
-                    '벗' 구독자 1명만 있어도 그룹 전체가 '같이 갈 사람' 기능을 이용할 수 있어요!
+                {/* 제한사항 - 무료 플랜만 */}
+                {plan.limitations && (
+                  <div className="border-t border-gray-100 pt-3 mb-4">
+                    <p className="text-xs text-gray-500 mb-2 font-medium">제한사항:</p>
+                    {plan.limitations.map((limitation, index) => (
+                      <div key={index} className="flex items-start gap-2 mb-1.5">
+                        <div className="w-2 h-2 bg-gray-300 rounded-full flex-shrink-0 mt-1.5"></div>
+                        <span className="text-xs text-gray-500">{limitation}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 그룹 혜택 - 벗 플랜만 */}
+                {plan.groupFeature && (
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-3 rounded-lg mb-4">
+                    <p className="text-xs text-muted-blue font-semibold mb-1.5 flex items-center gap-1.5">
+                      👥 그룹 혜택
+                    </p>
+                    <p className="text-xs text-gray-600 leading-tight">
+                      '벗' 구독자 1명만 있어도 그룹 전체가 '같이 갈 사람' 기능을 이용할 수 있어요!
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* 버튼 - 하단 고정 */}
+              <div className="flex-shrink-0">
+                {/* 가격 혜택 표시 */}
+                {isWelcome && plan.price > 0 && (
+                  <p className="text-center text-xs text-green-600 mb-3 font-medium">
+                    🎁 신규 가입 혜택: 20% 할인
                   </p>
-                </div>
-              )}
-
-              <Button
-                onClick={() => handleSubscribe(plan.id)}
-                className={`w-full ${
-                  plan.id === 'free' 
-                    ? 'bg-gray-500 hover:bg-gray-600' 
-                    : plan.premium 
-                      ? 'bg-muted-blue hover:bg-blue-600'
-                      : 'bg-hazelnut hover:bg-amber-600'
-                } text-white font-semibold py-3 rounded-xl transition-colors`}
-              >
-                {plan.id === 'free' ? '무료로 시작하기' : '구독하기'}
-              </Button>
+                )}
+                
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleSubscribe(plan.id)
+                  }}
+                  className={`w-full py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl ${
+                    plan.id === 'free' 
+                      ? 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white' 
+                      : plan.premium 
+                        ? 'bg-gradient-to-r from-muted-blue to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white'
+                        : 'bg-gradient-to-r from-hazelnut to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white'
+                  } ${selectedPlan === plan.id ? 'ring-2 ring-white ring-opacity-50' : ''}`}
+                >
+                  {plan.id === 'free' ? '무료로 시작하기' : '구독하기'}
+                </Button>
+              </div>
             </Card>
           ))}
         </div>

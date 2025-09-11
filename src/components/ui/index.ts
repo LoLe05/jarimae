@@ -37,5 +37,17 @@ export {
 
 export { Calendar } from './Calendar'
 
+export { 
+  default as RankBadge 
+} from './RankBadge'
+
+export { 
+  default as Map 
+} from './Map'
+
+export { 
+  default as FloatingPromotion 
+} from './FloatingPromotion'
+
 // 사용 예시:
-// import { Button, Input, Card, Loading, Calendar } from '@/components/ui'
+// import { Button, Input, Card, Loading, Calendar, RankBadge, Map, FloatingPromotion } from '@/components/ui'
