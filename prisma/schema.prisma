@@ -1,0 +1,653 @@
+// 자리매 (Jarimae) 데이터베이스 스키마
+// Next.js 14 + Prisma + PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "views"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// 사용자 관련 테이블
+// =============================================================================
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  password_hash     String
+  name              String
+  nickname          String?
+  phone             String    @unique
+  user_type         UserType
+  profile_image     String?
+  address           String?
+  phone_verified    Boolean   @default(false)
+  email_verified    Boolean   @default(false)
+  is_active         Boolean   @default(true)
+  last_login_at     DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  // 관계
+  stores            Store[]
+  reservations      Reservation[]
+  reviews           Review[]
+  notifications     Notification[]
+  user_preferences  UserPreference?
+  authentication_logs AuthenticationLog[]
+
+  @@map("users")
+  @@index([email])
+  @@index([phone])
+  @@index([user_type])
+  @@index([created_at])
+}
+
+model UserPreference {
+  id                    String  @id @default(cuid())
+  user_id               String  @unique
+  notification_sms      Boolean @default(true)
+  notification_email    Boolean @default(true)
+  notification_push     Boolean @default(true)
+  marketing_consent     Boolean @default(false)
+  location_consent      Boolean @default(false)
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  // 관계
+  user                  User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model AuthenticationLog {
+  id              String    @id @default(cuid())
+  user_id         String
+  action          AuthAction
+  ip_address      String?
+  user_agent      String?
+  success         Boolean
+  failure_reason  String?
+  created_at      DateTime  @default(now())
+
+  // 관계
+  user            User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("authentication_logs")
+  @@index([user_id])
+  @@index([created_at])
+  @@index([action])
+}
+
+// =============================================================================
+// 매장 관련 테이블
+// =============================================================================
+
+model Store {
+  id                    String        @id @default(cuid())
+  name                  String
+  slug                  String        @unique
+  category              StoreCategory
+  description           String?
+  address               String
+  detailed_address      String?
+  postal_code           String?
+  phone                 String
+  business_number       String        @unique
+  latitude              Float
+  longitude             Float
+  thumbnail_image       String?
+  images                String[]      @default([])
+  
+  // 영업 정보
+  operating_hours       Json          // OperatingHours 타입
+  break_time            Json?         // BreakTime 타입
+  holiday_schedule      Json?         // HolidaySchedule 타입
+  
+  // 부가 정보
+  amenities             String[]      @default([])
+  payment_methods       String[]      @default([])
+  min_order_amount      Int?
+  delivery_fee          Int?
+  parking_available     Boolean       @default(false)
+  wifi_available        Boolean       @default(false)
+  pet_friendly          Boolean       @default(false)
+  
+  // 승인 관련
+  status                StoreStatus   @default(PENDING)
+  approval_type         ApprovalType  @default(MANUAL)
+  approved_at           DateTime?
+  rejected_at           DateTime?
+  rejection_reason      String?
+  approved_by           String?       // Admin User ID
+  
+  // 통계
+  rating                Float         @default(0)
+  review_count          Int           @default(0)
+  total_reservations    Int           @default(0)
+  
+  // 소유자
+  owner_id              String
+  
+  // 시간 추적
+  created_at            DateTime      @default(now())
+  updated_at            DateTime      @updatedAt
+
+  // 관계
+  owner                 User          @relation(fields: [owner_id], references: [id])
+  tables                Table[]
+  reservations          Reservation[]
+  reviews               Review[]
+  menu_categories       MenuCategory[]
+  store_analytics       StoreAnalytics[]
+
+  @@map("stores")
+  @@index([category])
+  @@index([status])
+  @@index([owner_id])
+  @@index([latitude, longitude])
+  @@index([created_at])
+  @@index([rating])
+}
+
+model Table {
+  id            String      @id @default(cuid())
+  store_id      String
+  table_number  String
+  capacity      Int
+  table_type    TableType   @default(SQUARE)
+  position_x    Float       @default(0)
+  position_y    Float       @default(0)
+  width         Float       @default(1)
+  height        Float       @default(1)
+  status        TableStatus @default(AVAILABLE)
+  description   String?
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+
+  // 관계
+  store         Store         @relation(fields: [store_id], references: [id], onDelete: Cascade)
+  reservations  Reservation[]
+
+  @@map("tables")
+  @@unique([store_id, table_number])
+  @@index([store_id])
+  @@index([status])
+}
+
+// =============================================================================
+// 메뉴 관련 테이블
+// =============================================================================
+
+model MenuCategory {
+  id          String     @id @default(cuid())
+  store_id    String
+  name        String
+  description String?
+  sort_order  Int        @default(0)
+  is_active   Boolean    @default(true)
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+
+  // 관계
+  store       Store      @relation(fields: [store_id], references: [id], onDelete: Cascade)
+  menu_items  MenuItem[]
+
+  @@map("menu_categories")
+  @@index([store_id])
+  @@index([sort_order])
+}
+
+model MenuItem {
+  id              String        @id @default(cuid())
+  category_id     String
+  name            String
+  description     String?
+  price           Int
+  original_price  Int?          // 할인 전 가격
+  image           String?
+  is_available    Boolean       @default(true)
+  is_recommended  Boolean       @default(false)
+  is_spicy        Boolean       @default(false)
+  allergens       String[]      @default([])
+  calories        Int?
+  preparation_time Int?         // 조리 시간 (분)
+  sort_order      Int           @default(0)
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  // 관계
+  category        MenuCategory  @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@map("menu_items")
+  @@index([category_id])
+  @@index([is_available])
+  @@index([sort_order])
+}
+
+// =============================================================================
+// 예약 관련 테이블
+// =============================================================================
+
+model Reservation {
+  id                    String            @id @default(cuid())
+  reservation_number    String            @unique
+  store_id              String
+  customer_id           String
+  table_id              String?
+  
+  // 예약 정보
+  reservation_date      DateTime          @db.Date
+  reservation_time      DateTime          @db.Time
+  party_size            Int
+  special_requests      String?
+  estimated_duration    Int               @default(120) // 분 단위
+  
+  // 상태 관리
+  status                ReservationStatus @default(PENDING)
+  confirmed_at          DateTime?
+  cancelled_at          DateTime?
+  completed_at          DateTime?
+  
+  // 취소/거절 관련
+  cancellation_reason   String?
+  cancelled_by          String?           // USER_ID (고객 또는 매장)
+  cancellation_type     CancellationType?
+  
+  // 결제 관련
+  deposit_amount        Int               @default(0)
+  payment_status        PaymentStatus     @default(NONE)
+  payment_method        PaymentMethod?
+  paid_at               DateTime?
+  
+  // 알림 관련
+  sms_sent              Boolean           @default(false)
+  email_sent            Boolean           @default(false)
+  reminder_sent         Boolean           @default(false)
+  
+  // 시간 추적
+  created_at            DateTime          @default(now())
+  updated_at            DateTime          @updatedAt
+
+  // 관계
+  store                 Store             @relation(fields: [store_id], references: [id])
+  customer              User              @relation(fields: [customer_id], references: [id])
+  table                 Table?            @relation(fields: [table_id], references: [id])
+  payment               Payment?
+  review                Review?
+  reservation_logs      ReservationLog[]
+
+  @@map("reservations")
+  @@index([store_id])
+  @@index([customer_id])
+  @@index([reservation_date])
+  @@index([status])
+  @@index([created_at])
+  @@index([reservation_date, reservation_time])
+}
+
+model ReservationLog {
+  id              String          @id @default(cuid())
+  reservation_id  String
+  action          ReservationAction
+  old_status      ReservationStatus?
+  new_status      ReservationStatus?
+  changed_by      String?         // USER_ID
+  reason          String?
+  metadata        Json?
+  created_at      DateTime        @default(now())
+
+  // 관계
+  reservation     Reservation     @relation(fields: [reservation_id], references: [id], onDelete: Cascade)
+
+  @@map("reservation_logs")
+  @@index([reservation_id])
+  @@index([action])
+  @@index([created_at])
+}
+
+// =============================================================================
+// 결제 관련 테이블
+// =============================================================================
+
+model Payment {
+  id                String        @id @default(cuid())
+  reservation_id    String        @unique
+  amount            Int
+  payment_method    PaymentMethod
+  payment_status    PaymentStatus @default(PENDING)
+  
+  // 외부 결제 시스템 연동
+  external_payment_id String?     @unique
+  payment_gateway   String?       // "toss", "iamport", etc.
+  
+  // 결제 상세
+  paid_at           DateTime?
+  cancelled_at      DateTime?
+  refunded_at       DateTime?
+  refund_amount     Int?
+  refund_reason     String?
+  
+  // 추가 정보
+  receipt_url       String?
+  failure_reason    String?
+  
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+
+  // 관계
+  reservation       Reservation   @relation(fields: [reservation_id], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+  @@index([payment_status])
+  @@index([payment_method])
+  @@index([created_at])
+}
+
+// =============================================================================
+// 리뷰 관련 테이블
+// =============================================================================
+
+model Review {
+  id              String      @id @default(cuid())
+  store_id        String
+  customer_id     String
+  reservation_id  String      @unique
+  
+  // 리뷰 내용
+  rating          Int         // 1-5점
+  comment         String?
+  images          String[]    @default([])
+  
+  // 세부 평가 (선택사항)
+  food_rating     Int?        // 음식 맛
+  service_rating  Int?        // 서비스
+  atmosphere_rating Int?      // 분위기
+  price_rating    Int?        // 가성비
+  
+  // 상태
+  is_public       Boolean     @default(true)
+  is_flagged      Boolean     @default(false)
+  flag_reason     String?
+  
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+
+  // 관계
+  store           Store       @relation(fields: [store_id], references: [id])
+  customer        User        @relation(fields: [customer_id], references: [id])
+  reservation     Reservation @relation(fields: [reservation_id], references: [id])
+  store_reply     StoreReply?
+
+  @@map("reviews")
+  @@index([store_id])
+  @@index([customer_id])
+  @@index([rating])
+  @@index([created_at])
+  @@index([is_public])
+}
+
+model StoreReply {
+  id         String   @id @default(cuid())
+  review_id  String   @unique
+  comment    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // 관계
+  review     Review   @relation(fields: [review_id], references: [id], onDelete: Cascade)
+
+  @@map("store_replies")
+}
+
+// =============================================================================
+// 알림 관련 테이블
+// =============================================================================
+
+model Notification {
+  id              String            @id @default(cuid())
+  user_id         String
+  type            NotificationType
+  title           String
+  message         String
+  data            Json?             // 추가 데이터 (예약 ID 등)
+  
+  // 상태
+  is_read         Boolean           @default(false)
+  read_at         DateTime?
+  
+  // 발송 정보
+  sent_via        String[]          @default([]) // ["sms", "email", "push"]
+  sms_sent        Boolean           @default(false)
+  email_sent      Boolean           @default(false)
+  push_sent       Boolean           @default(false)
+  
+  created_at      DateTime          @default(now())
+
+  // 관계
+  user            User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+  @@index([user_id])
+  @@index([type])
+  @@index([is_read])
+  @@index([created_at])
+}
+
+// =============================================================================
+// 통계 및 분석 테이블
+// =============================================================================
+
+model StoreAnalytics {
+  id                  String   @id @default(cuid())
+  store_id            String
+  date                DateTime @db.Date
+  
+  // 예약 통계
+  total_reservations  Int      @default(0)
+  confirmed_reservations Int   @default(0)
+  cancelled_reservations Int   @default(0)
+  completed_reservations Int   @default(0)
+  no_show_count       Int      @default(0)
+  
+  // 수익 통계
+  total_revenue       Int      @default(0)
+  average_party_size  Float    @default(0)
+  peak_hour           Int?     // 가장 바쁜 시간대
+  
+  // 운영 통계
+  table_turnover_rate Float    @default(0)
+  average_duration    Int      @default(0) // 분 단위
+  
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  // 관계
+  store               Store    @relation(fields: [store_id], references: [id], onDelete: Cascade)
+
+  @@map("store_analytics")
+  @@unique([store_id, date])
+  @@index([store_id])
+  @@index([date])
+}
+
+model SystemAnalytics {
+  id                    String   @id @default(cuid())
+  date                  DateTime @db.Date
+  
+  // 사용자 통계
+  new_customers         Int      @default(0)
+  new_store_owners      Int      @default(0)
+  active_users          Int      @default(0)
+  total_users           Int      @default(0)
+  
+  // 매장 통계
+  new_stores            Int      @default(0)
+  approved_stores       Int      @default(0)
+  rejected_stores       Int      @default(0)
+  total_stores          Int      @default(0)
+  
+  // 예약 통계
+  total_reservations    Int      @default(0)
+  successful_reservations Int    @default(0)
+  cancellation_rate     Float    @default(0)
+  
+  // 수익 통계
+  total_revenue         Int      @default(0)
+  commission_earned     Int      @default(0)
+  
+  created_at            DateTime @default(now())
+
+  @@map("system_analytics")
+  @@unique([date])
+  @@index([date])
+}
+
+// =============================================================================
+// 시스템 관리 테이블
+// =============================================================================
+
+model AppConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  is_public   Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("app_configs")
+}
+
+model AdminUser {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  name        String
+  role        AdminRole @default(MODERATOR)
+  is_active   Boolean   @default(true)
+  last_login  DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@map("admin_users")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum UserType {
+  CUSTOMER
+  OWNER
+}
+
+enum StoreCategory {
+  KOREAN      // 한식
+  CHINESE     // 중식
+  JAPANESE    // 일식
+  WESTERN     // 양식
+  ASIAN       // 아시안
+  CAFE        // 카페
+  BAR         // 술집
+  FAST_FOOD   // 패스트푸드
+  DESSERT     // 디저트
+  OTHER       // 기타
+}
+
+enum StoreStatus {
+  PENDING     // 승인 대기
+  APPROVED    // 승인 완료
+  REJECTED    // 승인 거절
+  SUSPENDED   // 일시 정지
+  CLOSED      // 폐점
+}
+
+enum ApprovalType {
+  AUTO        // 자동 승인
+  MANUAL      // 수동 승인
+}
+
+enum TableType {
+  ROUND       // 원형 테이블
+  SQUARE      // 사각 테이블
+  BAR         // 바 테이블
+  BOOTH       // 부스
+  PRIVATE     // 룸
+}
+
+enum TableStatus {
+  AVAILABLE   // 사용 가능
+  RESERVED    // 예약됨
+  OCCUPIED    // 사용 중
+  MAINTENANCE // 정비 중
+}
+
+enum ReservationStatus {
+  PENDING     // 승인 대기
+  CONFIRMED   // 승인 완료
+  CANCELLED   // 취소됨
+  COMPLETED   // 완료됨
+  NO_SHOW     // 노쇼
+}
+
+enum CancellationType {
+  USER        // 고객 취소
+  STORE       // 매장 취소
+  SYSTEM      // 시스템 취소
+}
+
+enum PaymentStatus {
+  NONE        // 결제 없음
+  PENDING     // 결제 대기
+  PAID        // 결제 완료
+  FAILED      // 결제 실패
+  CANCELLED   // 결제 취소
+  REFUNDED    // 환불 완료
+}
+
+enum PaymentMethod {
+  CARD        // 카드
+  TRANSFER    // 계좌이체
+  VIRTUAL_ACCOUNT // 가상계좌
+  MOBILE      // 모바일 결제
+  CASH        // 현금 (현장 결제)
+}
+
+enum NotificationType {
+  RESERVATION_CONFIRMED    // 예약 확정
+  RESERVATION_CANCELLED    // 예약 취소
+  RESERVATION_REMINDER     // 예약 알림
+  REVIEW_REQUEST          // 리뷰 요청
+  STORE_APPROVED          // 매장 승인
+  STORE_REJECTED          // 매장 거절
+  PROMOTION               // 프로모션
+  SYSTEM_NOTICE           // 시스템 공지
+}
+
+enum ReservationAction {
+  CREATED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  MODIFIED
+  NO_SHOW
+}
+
+enum AuthAction {
+  LOGIN
+  LOGOUT
+  REGISTER
+  PASSWORD_RESET
+  EMAIL_VERIFY
+  PHONE_VERIFY
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
+}
