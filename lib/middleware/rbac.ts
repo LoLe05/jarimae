@@ -39,6 +39,25 @@ export function withOwnerRole(handler: (req: AuthenticatedRequest) => Promise<Ne
   return withRole(UserType.OWNER)(handler)
 }
 
+// Alias for withRole (commonly used in API routes)
+export function withRBAC(allowedRoles: string | string[]) {
+  // Convert string roles to UserType
+  const convertToUserType = (role: string): UserType => {
+    switch (role.toLowerCase()) {
+      case 'customer': return UserType.CUSTOMER
+      case 'owner': return UserType.OWNER  
+      case 'admin': return UserType.ADMIN
+      default: throw new Error(`Invalid role: ${role}`)
+    }
+  }
+  
+  const roles = Array.isArray(allowedRoles) 
+    ? allowedRoles.map(convertToUserType)
+    : [convertToUserType(allowedRoles)]
+  
+  return withRole(roles)
+}
+
 // Check if user owns the store
 export function withStoreOwnership(storeIdExtractor: (req: AuthenticatedRequest) => string) {
   return function(handler: (req: AuthenticatedRequest) => Promise<NextResponse>) {
