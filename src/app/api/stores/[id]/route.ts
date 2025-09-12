@@ -145,7 +145,7 @@ async function getStoreHandler(req: NextRequest, { params }: { params: { id: str
   }
 }
 
-// Update store (OWNER only - own store, or ADMIN)
+// Update store (OWNER only - own store, or OWNER)
 async function updateStoreHandler(
   req: AuthenticatedRequest & { validatedData: UpdateStoreData },
   { params }: { params: { id: string } }
@@ -188,7 +188,7 @@ async function updateStoreHandler(
     }
 
     // Check permissions (owner of the store or admin)
-    if (userType !== 'ADMIN' && store.owner_id !== userId) {
+    if (userType !== 'OWNER' && store.owner_id !== userId) {
       return NextResponse.json(
         {
           success: false,
@@ -254,7 +254,7 @@ async function updateStoreHandler(
   }
 }
 
-// Delete store (ADMIN only)
+// Delete store (OWNER only)
 async function deleteStoreHandler(req: AuthenticatedRequest, { params }: { params: { id: string } }) {
   const userId = req.user?.userId
   const userType = req.user?.userType
@@ -273,7 +273,7 @@ async function deleteStoreHandler(req: AuthenticatedRequest, { params }: { param
     )
   }
 
-  if (userType !== 'ADMIN') {
+  if (userType !== 'OWNER') {
     return NextResponse.json(
       {
         success: false,
@@ -352,7 +352,7 @@ async function deleteStoreHandler(req: AuthenticatedRequest, { params }: { param
   }
 }
 
-// Update store status (ADMIN only)
+// Update store status (OWNER only)
 async function updateStoreStatusHandler(
   req: AuthenticatedRequest & { validatedData: UpdateStoreStatusData },
   { params }: { params: { id: string } }
@@ -362,7 +362,7 @@ async function updateStoreStatusHandler(
   const storeId = params.id
   const { status } = req.validatedData
 
-  if (!userId || userType !== 'ADMIN') {
+  if (!userId || userType !== 'OWNER') {
     return NextResponse.json(
       {
         success: false,
@@ -423,7 +423,7 @@ const getHandler = withErrorHandling(getStoreHandler)
 
 const putHandler = withErrorHandling(
   withAuth(
-    withRBAC(['OWNER', 'ADMIN'])(
+    withRBAC(['OWNER'])(
       withValidation(updateStoreSchema)(updateStoreHandler)
     )
   )
@@ -431,13 +431,13 @@ const putHandler = withErrorHandling(
 
 const deleteHandler = withErrorHandling(
   withAuth(
-    withRBAC(['ADMIN'])(deleteStoreHandler)
+    withRBAC(['OWNER'])(deleteStoreHandler)
   )
 )
 
 const patchHandler = withErrorHandling(
   withAuth(
-    withRBAC(['ADMIN'])(
+    withRBAC(['OWNER'])(
       withValidation(updateStoreStatusSchema)(updateStoreStatusHandler)
     )
   )

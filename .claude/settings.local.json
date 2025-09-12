@@ -28,7 +28,9 @@
       "Bash(npx prisma:*)",
       "Bash(pg_ctl:*)",
       "Bash(rd:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(dir documents)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

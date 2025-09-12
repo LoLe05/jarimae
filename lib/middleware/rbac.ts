@@ -46,7 +46,6 @@ export function withRBAC(allowedRoles: string | string[]) {
     switch (role.toLowerCase()) {
       case 'customer': return UserType.CUSTOMER
       case 'owner': return UserType.OWNER  
-      case 'admin': return UserType.ADMIN
       default: throw new Error(`Invalid role: ${role}`)
     }
   }

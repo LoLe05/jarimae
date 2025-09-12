@@ -61,11 +61,11 @@ async function getReservationsHandler(req: AuthenticatedRequest & { validatedDat
     
     where.store_id = { in: ownedStores.map(store => store.id) }
   }
-  // ADMIN can see all reservations (no additional filter)
+  // OWNER can see all reservations (no additional filter)
 
   // Apply additional filters
   if (store_id) where.store_id = store_id
-  if (customer_id && (userType === 'ADMIN' || userType === 'OWNER')) where.customer_id = customer_id
+  if (customer_id && (userType === 'OWNER' || userType === 'OWNER')) where.customer_id = customer_id
   if (status) where.status = status
   if (contact_phone) where.contact_phone = { contains: contact_phone }
   if (contact_name) where.contact_name = { contains: contact_name, mode: 'insensitive' }
@@ -361,7 +361,7 @@ async function createReservationHandler(req: AuthenticatedRequest & { validatedD
 // Apply middleware and export handlers
 const getHandler = withErrorHandling(
   withAuth(
-    withRBAC(['CUSTOMER', 'OWNER', 'ADMIN'])(
+    withRBAC(['CUSTOMER', 'OWNER'])(
       withValidation(reservationSearchSchema)(getReservationsHandler)
     )
   )

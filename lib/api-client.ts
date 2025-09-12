@@ -49,6 +49,29 @@ export interface User {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
 
+// API endpoints constants
+export const API_ENDPOINTS = {
+  // Auth endpoints
+  LOGIN: '/auth/login',
+  REGISTER: '/auth/register',
+  LOGOUT: '/auth/logout',
+  REFRESH: '/auth/refresh',
+  VERIFY_SMS: '/auth/verify-sms',
+  VERIFY_EMAIL: '/auth/verify-email',
+  
+  // User endpoints
+  PROFILE: '/users/profile',
+  
+  // Store endpoints
+  STORES: '/stores',
+  STORE_BY_ID: (id: string) => `/stores/${id}`,
+  
+  // Reservation endpoints
+  RESERVATIONS: '/reservations',
+  RESERVATION_BY_ID: (id: string) => `/reservations/${id}`,
+  CHECK_AVAILABILITY: '/reservations/availability',
+}
+
 class ApiClient {
   private getAuthHeader(): HeadersInit {
     if (typeof window === 'undefined') return {}

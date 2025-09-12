@@ -85,7 +85,7 @@ async function getReservationHandler(req: AuthenticatedRequest, { params }: { pa
 
     // Check permissions
     const canView = 
-      userType === 'ADMIN' ||
+      userType === 'OWNER' ||
       (userType === 'CUSTOMER' && reservation.customer_id === userId) ||
       (userType === 'OWNER' && reservation.store.owner_id === userId)
 
@@ -118,7 +118,7 @@ async function getReservationHandler(req: AuthenticatedRequest, { params }: { pa
       (
         (userType === 'CUSTOMER' && reservation.customer_id === userId) ||
         (userType === 'OWNER' && reservation.store.owner_id === userId) ||
-        userType === 'ADMIN'
+        userType === 'OWNER'
       )
 
     return NextResponse.json(
@@ -208,7 +208,7 @@ async function updateReservationHandler(
 
     // Check permissions
     const canUpdate = 
-      userType === 'ADMIN' ||
+      userType === 'OWNER' ||
       (userType === 'CUSTOMER' && reservation.customer_id === userId) ||
       (userType === 'OWNER' && reservation.store.owner_id === userId)
 
@@ -393,7 +393,7 @@ async function updateReservationHandler(
   }
 }
 
-// Update reservation status (OWNER and ADMIN)
+// Update reservation status (OWNER and OWNER)
 async function updateReservationStatusHandler(
   req: AuthenticatedRequest & { validatedData: UpdateReservationStatusData },
   { params }: { params: { id: string } }
@@ -440,7 +440,7 @@ async function updateReservationStatusHandler(
 
     // Check permissions
     const canUpdateStatus = 
-      userType === 'ADMIN' ||
+      userType === 'OWNER' ||
       (userType === 'OWNER' && reservation.store.owner_id === userId) ||
       (userType === 'CUSTOMER' && reservation.customer_id === userId && status === 'CANCELLED')
 
@@ -532,13 +532,13 @@ async function updateReservationStatusHandler(
 // Apply middleware and export handlers
 const getHandler = withErrorHandling(
   withAuth(
-    withRBAC(['CUSTOMER', 'OWNER', 'ADMIN'])(getReservationHandler)
+    withRBAC(['CUSTOMER', 'OWNER'])(getReservationHandler)
   )
 )
 
 const putHandler = withErrorHandling(
   withAuth(
-    withRBAC(['CUSTOMER', 'OWNER', 'ADMIN'])(
+    withRBAC(['CUSTOMER', 'OWNER'])(
       withValidation(updateReservationSchema)(updateReservationHandler)
     )
   )
@@ -546,7 +546,7 @@ const putHandler = withErrorHandling(
 
 const patchHandler = withErrorHandling(
   withAuth(
-    withRBAC(['CUSTOMER', 'OWNER', 'ADMIN'])(
+    withRBAC(['CUSTOMER', 'OWNER'])(
       withValidation(updateReservationStatusSchema)(updateReservationStatusHandler)
     )
   )
